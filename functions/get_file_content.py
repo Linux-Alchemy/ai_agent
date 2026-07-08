@@ -19,28 +19,23 @@ def get_file_content(working_directory: str, file_path: str) -> str:
         or a standard-library call raises.
     """
     try:
-        # TODO 1: resolve both paths to absolutes
-        #   working_dir_abs = abspath(working_directory)
-        #   target_file     = normpath(join(working_dir_abs, file_path))
+        working_dir_abs: str = os.path.abspath(working_directory)
+        target_file: str = os.path.normpath(os.path.join(working_dir_abs, file_path))
 
-        # TODO 2: guard — is target_file inside working_dir_abs?
-        #   reuse the commonpath check from get_files_info.
-        #   if it fails, return:
-        #     f'Error: Cannot read "{file_path}" as it is outside the permitted working directory'
+        valid_target_file: bool = os.path.commonpath([working_dir_abs, target_file]) == working_dir_abs
 
-        # TODO 3: guard — is target_file actually a regular file? (os.path.isfile)
-        #   if not, return:
-        #     f'Error: File not found or is not a regular file: "{file_path}"'
+        if not valid_target_file:
+                return f'Error: Cannot read "{file_path}" as it is outside the permitted working directory'
+        if not os.path.isfile(target_file):
+            return f'Error: File not found or is not a regular file: "{file_path}"'
 
-        # TODO 4: open target_file for reading (use a `with` block),
-        #   read MAX_CHARS characters into `content`
+        with open (target_file, 'r') as f:
+            content = f.read(MAX_CHARS)
+            if f.read(1):
+                content += f'[...File "{file_path}" truncated at {MAX_CHARS} characters]'
+            return content
+        
 
-        # TODO 5: peek one more char — if `f.read(1)` is truthy, the file was
-        #   longer than MAX_CHARS, so append this to content:
-        #     f'[...File "{file_path}" truncated at {MAX_CHARS} characters]'
-
-        # TODO 6: return content
-        ...
 
     except Exception as e:
         return f"Error: {e}"
