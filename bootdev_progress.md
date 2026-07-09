@@ -49,11 +49,19 @@ first to pick up where we left off.
   `test_get_file_content.py`. Reads up to MAX_CHARS, appends truncation notice.
 - **ch2/L5** — `write_file` (`functions/write_file.py`); `test_write_file.py`.
   makedirs parents, overwrite in "w" mode, success string with char count.
+- **ch2/L6** — `run_python_file` (`functions/run_python_file.py`);
+  `test_run_python_file.py`. subprocess.run with `cwd`, `capture_output`,
+  `text=True`, `timeout=30`; output built as list-of-parts, `"\n".join`ed.
+  Added the security warning to `README.md`.
+- **ch3/L1** — system prompt wired in: `src/ai_agent/prompts.py` holds
+  `system_prompt`, imported into `main.py` and placed first in the `messages`
+  list (system role). Needed `temperature=0` on the `create` call for
+  deterministic output (the grader expects the exact response).
 
 ### Next up
-- **ch2/L6** — expected: `run_python_file` (execute a python file in the sandbox).
+- **ch3/L2** — Matt picks this up next session (~2026-07-10).
 - After that: register the functions as tool schemas and build the agent loop
-  (function calling) — that's the back half of ch2 / ch3.
+  (function calling).
 
 ### Open items
 - Fixed docstrings added to `get_files_info` and `write_file` (Google style).

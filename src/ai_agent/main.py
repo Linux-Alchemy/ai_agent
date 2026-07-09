@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 from argparse import ArgumentParser, Namespace
+from ai_agent.prompts import system_prompt
+
 
 load_dotenv()
 api_key: str | None = os.environ.get("OPENROUTER_API_KEY")
@@ -20,7 +22,8 @@ if not isinstance(args.user_prompt, str):
     raise RuntimeError("The user prompt must be a string")
 
 messages: list[ChatCompletionMessageParam] = [
-    {"role": "user", "content": args.user_prompt}
+    {"role": "system", "content": system_prompt},
+    {"role": "user", "content": args.user_prompt},
 ]
 
 client: OpenAI = OpenAI(
@@ -30,6 +33,7 @@ client: OpenAI = OpenAI(
 response: ChatCompletion = client.chat.completions.create(
     model="openrouter/free",
     messages=messages,
+    temperature=0,
 )
 
 if response.usage is None:
