@@ -23,32 +23,46 @@ def run_python_file(
         escapes working_directory, is missing, is not a regular file, is not a
         ``.py`` file, or the subprocess raises.
     """
-    # TODO 1: Build absolute paths and validate file_path is inside
-    #         working_directory (abspath + normpath(join) + commonpath check).
-    #         If it escapes, return:
-    #         f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory'
 
-    # TODO 2: If the target is not an existing regular file (os.path.isfile),
-    #         return:
-    #         f'Error: "{file_path}" does not exist or is not a regular file'
+    try:
+        working_dir_abs: str = os.path.abspath(working_directory)
+        target_file: str = os.path.normpath(os.path.join(working_dir_abs, file_path))
+        valid_target_file: bool = os.path.commonpath([working_dir_abs, target_file]) == working_dir_abs
 
-    # TODO 3: If the target does not end with ".py", return:
-    #         f'Error: "{file_path}" is not a Python file'
+        if not valid_target_file:
+            return f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory'
+        if not os.path.isfile(target_file):
+            return f'Error: "{file_path}" does not exist or is not a regular file'
+        if not target_file.endswith('.py'):
+            return f'Error: "{file_path}" is not a Python file'
 
-    # TODO 4: Build the command list, e.g. ["python", absolute_file_path].
+        command: list[str] = ["python", target_file]
+        if args:
+            command.extend(args)
 
-    # TODO 5: If args were provided, .extend() the command list with them.
+        result = subprocess.run(command,
+                                cwd=working_dir_abs,
+                                capture_output=True,
+                                text=True,
+                                timeout=30)
 
-    # TODO 6: subprocess.run the command — set cwd to working_directory,
-    #         capture_output=True, text=True, timeout=30. Assign the result.
+        output: list[str] = []
+        if result.returncode != 0:
+            output.append(f"Process exited with code {result.returncode}")
 
-    # TODO 7: Build the output string from the CompletedProcess:
-    #         - non-zero returncode -> include "Process exited with code X"
-    #         - empty stdout AND empty stderr -> "No output produced"
-    #         - otherwise -> stdout prefixed "STDOUT:", stderr prefixed "STDERR:"
+        if not result.stdout and not result.stderr:
+            output.append("No output produced")
 
-    # TODO 8: Return the output string.
+        if result.stdout:
+            output.append(f"STDOUT: {result.stdout}")
+        if result.stderr:
+            output.append(f"STDERR: {result.stderr}")
 
-    # TODO 9: Wrap the above in try/except; on any exception return:
-    #         f"Error: executing Python file: {e}"
-    ...
+        return "\n".join(output)
+
+
+
+    except Exception as e:
+        return f"Error: executing Python file: {e}"
+
+

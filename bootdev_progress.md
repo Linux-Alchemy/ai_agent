@@ -57,4 +57,10 @@ first to pick up where we left off.
 
 ### Open items
 - Fixed docstrings added to `get_files_info` and `write_file` (Google style).
-- Watch for a stray `calulator/` dir from a typo'd test arg (see if it lingers).
+- ~~Watch for a stray `calulator/` dir from a typo'd test arg~~ — resolved:
+  removed the dir, Matt fixed the `"calulator"` typo in `test_write_file.py:4`.
+- **Hardening (later polish pass):** `run_python_file` uses the literal
+  `"python"` in the command list to satisfy the boot.dev grader. For real-world
+  robustness, swap to `sys.executable` (the exact interpreter running the
+  process) — `"python"` may be missing or point at Python 2 on some systems.
+  Noted alongside the security warning now in `README.md`.
