@@ -1,6 +1,6 @@
 import os
 
-from config import MAX_CHARS
+from ai_agent.config import MAX_CHARS
 
 
 def get_file_content(working_directory: str, file_path: str) -> str:

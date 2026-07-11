@@ -1,4 +1,4 @@
-from functions.run_python_file import run_python_file
+from ai_agent.functions.run_python_file import run_python_file
 
 
 print(run_python_file("calculator", "main.py"))

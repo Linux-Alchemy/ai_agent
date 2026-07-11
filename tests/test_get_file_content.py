@@ -1,4 +1,4 @@
-from functions.get_file_content import get_file_content
+from ai_agent.functions.get_file_content import get_file_content
 
 # Truncation check — don't print the full contents, just the shape of the result
 result = get_file_content("calculator", "lorem.txt")

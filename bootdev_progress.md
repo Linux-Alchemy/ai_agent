@@ -23,10 +23,13 @@ first to pick up where we left off.
 
 ## Project Conventions (this repo differs from the boot.dev default layout)
 
-- **Tool functions:** `functions/<name>.py` at repo root (not under `src/`).
-- **Test modules:** print-based, at repo root, named `test_<name>.py`.
+- **Tool functions:** `src/ai_agent/functions/<name>.py` (inside the package).
+  Import as `from ai_agent.functions.<name> import <name>`.
+- **Test modules:** print-based, in `tests/`, named `test_<name>.py`. Run them
+  **from repo root** (they use relative working dirs like `"calculator"`).
 - **Main app:** `src/ai_agent/main.py` (ch1 OpenRouter chatbot).
-- **Config:** `config.py` at repo root (`MAX_CHARS = 10000`).
+- **Config:** `src/ai_agent/config.py` (`MAX_CHARS = 10000`). Import as
+  `from ai_agent.config import MAX_CHARS`.
 - **Path-validation pattern** (reused by every tool function):
   ```python
   working_dir_abs = os.path.abspath(working_directory)
@@ -35,7 +38,7 @@ first to pick up where we left off.
   ```
 - **Env:** uv (`uv add`, never bare pip; pip-safety skill applies), basedpyright
   on recommended (full type hints mandatory), ruff line-length 88, pytest.
-- **Run a test module:** `uv run python test_<name>.py`.
+- **Run a test module:** `uv run python tests/test_<name>.py` (from repo root).
 
 ---
 
@@ -57,6 +60,12 @@ first to pick up where we left off.
   `system_prompt`, imported into `main.py` and placed first in the `messages`
   list (system role). Needed `temperature=0` on the `create` call for
   deterministic output (the grader expects the exact response).
+
+- **Housekeeping (2026-07-11)** — consolidated to a single src-layout root.
+  Moved `config.py`, `functions/` → `src/ai_agent/`; moved root `test_*.py` →
+  `tests/`; added `src/ai_agent/functions/__init__.py`; updated all imports to
+  `ai_agent.*`; removed duplicate `.env` line in `.gitignore`. `git mv` used so
+  history survives. Not yet committed.
 
 ### Next up
 - **ch3/L2** — Matt picks this up next session (~2026-07-10).
