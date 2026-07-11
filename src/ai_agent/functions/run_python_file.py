@@ -68,7 +68,7 @@ def run_python_file(
 
 
 
-schema_get_files_info: ChatCompletionToolParam = {
+schema_run_python_file: ChatCompletionToolParam = {
     "type": "function",
     "function": {
         "name": "run_python_file",

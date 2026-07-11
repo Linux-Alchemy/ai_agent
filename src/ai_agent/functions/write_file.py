@@ -2,7 +2,6 @@ import os
 from openai.types.chat import ChatCompletionToolParam
 
 
-
 def write_file(working_directory: str, file_path: str, content: str) -> str:
     """Write content to a file, scoped to a working directory.
 
@@ -23,7 +22,9 @@ def write_file(working_directory: str, file_path: str, content: str) -> str:
         working_dir_abs: str = os.path.abspath(working_directory)
         target_file: str = os.path.normpath(os.path.join(working_dir_abs, file_path))
 
-        valid_target_file: bool = os.path.commonpath([working_dir_abs, target_file]) == working_dir_abs
+        valid_target_file: bool = (
+            os.path.commonpath([working_dir_abs, target_file]) == working_dir_abs
+        )
 
         if not valid_target_file:
             return f'Error: Cannot write to "{file_path}" as it is outside the permitted working directory'
@@ -31,28 +32,37 @@ def write_file(working_directory: str, file_path: str, content: str) -> str:
             return f'Error: Cannot write to "{file_path}" as it is a directory'
 
         os.makedirs(os.path.dirname(target_file), exist_ok=True)
-        with open (target_file, 'w') as f:
-           _ = f.write(content)
-        return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
+        with open(target_file, "w") as f:
+            _ = f.write(content)
+        return (
+            f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
+        )
 
     except Exception as e:
         return f"Error: {e}"
 
 
-schema_get_files_info: ChatCompletionToolParam = {
-    "type": "function",
-    "function": {
-        "name": "write_file",
-        "description": "Write to a file in a specified directory relative to the working directory, providing file size and directory status",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "directory": {
-                    "type": "string",
-                    "description": "Directory path to files from, relative to the working directory (default is the working directory itself)",
+schema_write_file: ChatCompletionToolParam = (
+    {
+        "type": "function",
+        "function": {
+            "name": "write_file",
+            "description": "Write to a file in a specified directory relative to the working directory, providing file size and directory status",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "Path to the file to write, relative to the working directory",
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "The text content to write to the file",
+                    },
                 },
+                "required": ["file_path", "content"],
             },
         },
-    },
-}
+    }
+)
 

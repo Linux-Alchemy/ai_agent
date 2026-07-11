@@ -23,39 +23,43 @@ def get_file_content(working_directory: str, file_path: str) -> str:
         working_dir_abs: str = os.path.abspath(working_directory)
         target_file: str = os.path.normpath(os.path.join(working_dir_abs, file_path))
 
-        valid_target_file: bool = os.path.commonpath([working_dir_abs, target_file]) == working_dir_abs
+        valid_target_file: bool = (
+            os.path.commonpath([working_dir_abs, target_file]) == working_dir_abs
+        )
 
         if not valid_target_file:
-                return f'Error: Cannot read "{file_path}" as it is outside the permitted working directory'
+            return f'Error: Cannot read "{file_path}" as it is outside the permitted working directory'
         if not os.path.isfile(target_file):
             return f'Error: File not found or is not a regular file: "{file_path}"'
 
-        with open (target_file, 'r') as f:
+        with open(target_file, "r") as f:
             content = f.read(MAX_CHARS)
             if f.read(1):
-                content += f'[...File "{file_path}" truncated at {MAX_CHARS} characters]'
+                content += (
+                    f'[...File "{file_path}" truncated at {MAX_CHARS} characters]'
+                )
             return content
-        
-
 
     except Exception as e:
         return f"Error: {e}"
 
 
-schema_get_files_content: ChatCompletionToolParam = {
-    "type": "function",
-    "function": {
-        "name": "get_files_content",
-        "description": "Read files content in a specified directory relative to the working directory, providing file contents",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "directory": {
-                    "type": "string",
-                    "description": "Directory path to read files from, relative to the working directory (default is the working directory itself)",
+schema_get_file_content: ChatCompletionToolParam = (
+    {
+        "type": "function",
+        "function": {
+            "name": "get_file_content",
+            "description": "Read and return the contents of a single file, relative to the working directory, truncated to a maximum character count",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "Path to the file to read, relative to the working directory",
+                    }
                 },
+                "required": ["file_path"],
             },
         },
-    },
-}
-
+    }
+)
