@@ -32,7 +32,7 @@ client: OpenAI = OpenAI(
     api_key=api_key,
 )
 response: ChatCompletion = client.chat.completions.create(
-    model="openrouter/free",
+    model="google/gemini-2.5-flash",
     messages=messages,
     tools=available_functions,
     temperature=0,

@@ -78,16 +78,35 @@ first to pick up where we left off.
   `json.loads(... or "{}")` parses the arg string. System prompt updated to list
   the available op. Test passed. Not calling functions yet — just printing intent.
 
+- **ch3/L3 (2026-07-11)** — "More Declarations". Added the remaining three tool
+  schemas at the bottom of their function files: `schema_get_file_content`,
+  `schema_write_file` (two required props: `file_path` + `content`),
+  `schema_run_python_file` (nested `args` array — `"type": "array"`,
+  `"items": {"type": "string"}` — optional, so *not* in `required`). Wired all
+  four into `available_functions` in `call_functions.py`. Updated the system
+  prompt in `prompts.py` to list all four operations (exact grader wording).
+  Still just *choosing* functions, not calling them yet. All four grader prompts
+  passed.
+  - **Model swap (root cause of a failing grader step):** `main.py` was on
+    `model="openrouter/free"` — an auto-router that lands on weak free models
+    that pick the wrong tool (`get_files_info` for "run main.py") and mangle args
+    (`'pkg>'`). Switched to **Gemini 2.5 Flash** (`temperature=0` back in place) —
+    deterministic, correct tool selection across all four prompts. The schemas
+    were correct all along; the model was the problem.
+  - **JSON schema lesson:** a trailing comma after the closing `}` of a dict
+    literal turns it into a one-element tuple, which `ruff format` then wraps in
+    parens — the source of the mysterious `= ( {...} )` in two files. Harmless
+    once the comma's gone (parenthesised dict); worth spotting.
+
 ### Next up
-- **ch3/L3** — Matt picks this up next session. Likely: add the remaining three
-  schemas (`get_file_content`, `write_file`, `run_python_file`) to
-  `available_functions`, then start actually *calling* the requested function
-  and feeding the result back (steps 4–5 of the intro flow).
+- **ch3/L4** — Matt picks this up next session. Likely: actually *call* the
+  requested function (dispatch name → real function, inject `working_directory`),
+  then feed the result back to the model (steps 4–5 of the agent loop).
 
 ### Open items
-- **`temperature=0` removed from `main.py`'s `create` call** during ch3/L2 (was
-  added in L1 for grader determinism). L2's test still passed without it. Put it
-  back if a later grader wants deterministic output.
+- ~~**`temperature=0` removed from `main.py`'s `create` call** during ch3/L2~~ —
+  resolved: restored during ch3/L3 alongside the Gemini 2.5 Flash swap. The
+  grader wanted deterministic tool selection; it's back and staying.
 - **Deliberately-left basedpyright note** in `main.py`: `function_args` reads as
   `Any` because `json.loads` returns `Any`. Harmless (only printed). A
   `cast(dict[str, object], ...)` at the parse boundary silences it if ever wanted.

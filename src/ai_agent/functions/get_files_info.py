@@ -40,8 +40,7 @@ def get_files_info(working_directory: str, directory: str = ".") -> str:
         return f"Error: {e}"
 
 
-schema_get_files_info: ChatCompletionToolParam = {
-    "type": "function",
+schema_get_files_info: ChatCompletionToolParam = { "type": "function",
     "function": {
         "name": "get_files_info",
         "description": "Lists files in a specified directory relative to the working directory, providing file size and directory status",
