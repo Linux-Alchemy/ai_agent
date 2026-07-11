@@ -1,4 +1,5 @@
 import os
+from openai.types.chat import ChatCompletionToolParam
 
 from ai_agent.config import MAX_CHARS
 
@@ -39,3 +40,22 @@ def get_file_content(working_directory: str, file_path: str) -> str:
 
     except Exception as e:
         return f"Error: {e}"
+
+
+schema_get_files_content: ChatCompletionToolParam = {
+    "type": "function",
+    "function": {
+        "name": "get_files_content",
+        "description": "Read files content in a specified directory relative to the working directory, providing file contents",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "directory": {
+                    "type": "string",
+                    "description": "Directory path to read files from, relative to the working directory (default is the working directory itself)",
+                },
+            },
+        },
+    },
+}
+

@@ -1,4 +1,7 @@
 import os
+from openai.types.chat import ChatCompletionToolParam
+
+
 
 def write_file(working_directory: str, file_path: str, content: str) -> str:
     """Write content to a file, scoped to a working directory.
@@ -34,4 +37,22 @@ def write_file(working_directory: str, file_path: str, content: str) -> str:
 
     except Exception as e:
         return f"Error: {e}"
+
+
+schema_get_files_info: ChatCompletionToolParam = {
+    "type": "function",
+    "function": {
+        "name": "write_file",
+        "description": "Write to a file in a specified directory relative to the working directory, providing file size and directory status",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "directory": {
+                    "type": "string",
+                    "description": "Directory path to files from, relative to the working directory (default is the working directory itself)",
+                },
+            },
+        },
+    },
+}
 
