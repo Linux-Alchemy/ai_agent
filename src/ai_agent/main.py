@@ -6,7 +6,8 @@ from openai import OpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 from argparse import ArgumentParser, Namespace
 from ai_agent.prompts import system_prompt
-
+from ai_agent.call_functions import available_functions
+import json
 
 load_dotenv()
 api_key: str | None = os.environ.get("OPENROUTER_API_KEY")
@@ -33,7 +34,8 @@ client: OpenAI = OpenAI(
 response: ChatCompletion = client.chat.completions.create(
     model="openrouter/free",
     messages=messages,
-    temperature=0,
+    tools=available_functions,
+    
 )
 
 if response.usage is None:
@@ -42,12 +44,18 @@ if response.usage is None:
 prompt_tokens: int = response.usage.prompt_tokens
 response_tokens: int = response.usage.completion_tokens
 
-content: str | None = response.choices[0].message.content
+message = response.choices[0].message
+if message.tool_calls:
+    for tool_call in message.tool_calls:
+        function_args = json.loads(tool_call.function.arguments or "{}")
+        print(f"Calling function: {tool_call.function.name}({function_args})")
+
+else:
+    print(message.content)
 
 if args.verbose:
     print(f"User prompt: {args.user_prompt}")
     print(f"Prompt tokens:{prompt_tokens}")
     print(f"Response tokens: {response_tokens}")
-    print(content)
-else:
-    print(content)
+    
+
