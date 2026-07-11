@@ -66,13 +66,31 @@ first to pick up where we left off.
   `tests/`; added `src/ai_agent/functions/__init__.py`; updated all imports to
   `ai_agent.*`; removed duplicate `.env` line in `.gitignore`. `git mv` used so
   history survives. Not yet committed.
+- **ch3/L2 (2026-07-11)** — function declaration / tool schemas. Added
+  `schema_get_files_info` at the bottom of `functions/get_files_info.py`
+  (typed `ChatCompletionToolParam`, imported from `openai.types.chat`). New
+  `src/ai_agent/call_functions.py` assembles `available_functions:
+  list[ChatCompletionToolParam]`. `main.py`: passes `tools=available_functions`
+  to `create`; grabs `message = response.choices[0].message`; if
+  `message.tool_calls`, loops and prints `Calling function: name(args)`, else
+  prints `message.content`. Needed a `tool_call.type == "function"` guard to
+  narrow the union (custom vs function tool calls) before touching `.function`.
+  `json.loads(... or "{}")` parses the arg string. System prompt updated to list
+  the available op. Test passed. Not calling functions yet — just printing intent.
 
 ### Next up
-- **ch3/L2** — Matt picks this up next session (~2026-07-10).
-- After that: register the functions as tool schemas and build the agent loop
-  (function calling).
+- **ch3/L3** — Matt picks this up next session. Likely: add the remaining three
+  schemas (`get_file_content`, `write_file`, `run_python_file`) to
+  `available_functions`, then start actually *calling* the requested function
+  and feeding the result back (steps 4–5 of the intro flow).
 
 ### Open items
+- **`temperature=0` removed from `main.py`'s `create` call** during ch3/L2 (was
+  added in L1 for grader determinism). L2's test still passed without it. Put it
+  back if a later grader wants deterministic output.
+- **Deliberately-left basedpyright note** in `main.py`: `function_args` reads as
+  `Any` because `json.loads` returns `Any`. Harmless (only printed). A
+  `cast(dict[str, object], ...)` at the parse boundary silences it if ever wanted.
 - Fixed docstrings added to `get_files_info` and `write_file` (Google style).
 - ~~Watch for a stray `calulator/` dir from a typo'd test arg~~ — resolved:
   removed the dir, Matt fixed the `"calulator"` typo in `test_write_file.py:4`.
