@@ -47,7 +47,7 @@ schema_write_file: ChatCompletionToolParam = (
         "type": "function",
         "function": {
             "name": "write_file",
-            "description": "Write to a file in a specified directory relative to the working directory, providing file size and directory status",
+            "description": "Write content to a file, relative to the working directory, creating it if needed and overwriting it if it already exists",
             "parameters": {
                 "type": "object",
                 "properties": {
