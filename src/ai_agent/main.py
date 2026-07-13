@@ -1,5 +1,6 @@
 # bootdev ai-agent project
 
+import sys
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -47,21 +48,27 @@ def main() -> None:
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key,
     )
-    response: ChatCompletion = client.chat.completions.create(
-        model="google/gemini-2.5-flash",
-        messages=messages,
-        tools=available_functions,
-        temperature=0,
-    )
+    for _ in range(20):
+        response: ChatCompletion = client.chat.completions.create(
+            model="google/gemini-2.5-flash",
+            messages=messages,
+            tools=available_functions,
+            temperature=0,
+        )
 
-    if response.usage is None:
-        raise RuntimeError("No usage metadata returned")
+        if response.usage is None:
+            raise RuntimeError("No usage metadata returned")
 
-    prompt_tokens: int = response.usage.prompt_tokens
-    response_tokens: int = response.usage.completion_tokens
+        prompt_tokens: int = response.usage.prompt_tokens
+        response_tokens: int = response.usage.completion_tokens
 
-    message = response.choices[0].message
-    if message.tool_calls:
+        message = response.choices[0].message
+        messages.append(message)
+        if not message.tool_calls:
+            print("Final Response")
+            print(message.content)
+            return
+
         for tool_call in message.tool_calls:
             if tool_call.type == "function":
                 result_message: ChatCompletionToolMessageParam = call_function(
@@ -72,13 +79,16 @@ def main() -> None:
                 if args.verbose:
                     print(f" -> {result_message['content']}")
 
-    else:
-        print(message.content)
+                messages.append(result_message)
 
-    if args.verbose:
-        print(f"User prompt: {args.user_prompt}")
-        print(f"Prompt tokens:{prompt_tokens}")
-        print(f"Response tokens: {response_tokens}")
+    else:
+        print("Reached maximum turns")
+        sys.exit(1)
+
+        if args.verbose:
+            print(f"User prompt: {args.user_prompt}")
+            print(f"Prompt tokens:{prompt_tokens}")
+            print(f"Response tokens: {response_tokens}")
 
 
 if __name__ == "__main__":

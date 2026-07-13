@@ -111,6 +111,7 @@ first to pick up where we left off.
   message** (`role` / `tool_call_id` / `content`). `main.py` calls it in place of
   the old print, raises on empty content, and prints `-> {content}` when verbose.
   All four tools verified working end-to-end (list, read, write, run tests.py).
+  **Grader passed.**
   - **Typing:** took the SDK's real types over the lesson's loose ones —
     `tool_call: ChatCompletionMessageFunctionToolCall` (the `.type == "function"`
     guard in `main.py` is what narrows the union to it) and
