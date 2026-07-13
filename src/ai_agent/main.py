@@ -3,11 +3,13 @@
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
-from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
+from openai.types.chat import ChatCompletion, ChatCompletionMessageParam, ChatCompletionToolMessageParam
 from argparse import ArgumentParser, Namespace
 from ai_agent.prompts import system_prompt
-from ai_agent.call_functions import available_functions
-import json
+from ai_agent.call_functions import available_functions, call_function
+
+
+
 
 load_dotenv()
 api_key: str | None = os.environ.get("OPENROUTER_API_KEY")
@@ -45,12 +47,17 @@ if response.usage is None:
 prompt_tokens: int = response.usage.prompt_tokens
 response_tokens: int = response.usage.completion_tokens
 
+
+
 message = response.choices[0].message
 if message.tool_calls:
     for tool_call in message.tool_calls:
         if tool_call.type == "function":
-            function_args: dict[str, object] = json.loads(tool_call.function.arguments or "{}")
-            print(f"Calling function: {tool_call.function.name}({function_args})")
+            result_message:ChatCompletionToolMessageParam = call_function(tool_call, args.verbose)
+            if not result_message['content']:
+                raise ValueError("Content is empty")
+            if args.verbose:
+                print(f" -> {result_message['content']}")
 
 else:
     print(message.content)
