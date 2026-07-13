@@ -44,6 +44,9 @@ def main() -> None:
         {"role": "user", "content": args.user_prompt},
     ]
 
+
+    print(f"User prompt: {args.user_prompt}")
+
     client: OpenAI = OpenAI(
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key,
@@ -61,6 +64,11 @@ def main() -> None:
 
         prompt_tokens: int = response.usage.prompt_tokens
         response_tokens: int = response.usage.completion_tokens
+        
+        if args.verbose:
+            print(f"Prompt tokens:{prompt_tokens}")
+            print(f"Response tokens: {response_tokens}")
+
 
         message = response.choices[0].message
         messages.append(message)
@@ -85,10 +93,6 @@ def main() -> None:
         print("Reached maximum turns")
         sys.exit(1)
 
-        if args.verbose:
-            print(f"User prompt: {args.user_prompt}")
-            print(f"Prompt tokens:{prompt_tokens}")
-            print(f"Response tokens: {response_tokens}")
 
 
 if __name__ == "__main__":
