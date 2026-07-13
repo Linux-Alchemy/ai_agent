@@ -27,7 +27,12 @@ first to pick up where we left off.
   Import as `from ai_agent.functions.<name> import <name>`.
 - **Test modules:** print-based, in `tests/`, named `test_<name>.py`. Run them
   **from repo root** (they use relative working dirs like `"calculator"`).
-- **Main app:** `src/ai_agent/main.py` (ch1 OpenRouter chatbot).
+- **Main app:** `src/ai_agent/main.py` — holds `main()`. A three-line launcher at
+  repo root (`main.py`) imports and calls it, so `uv run main.py` works from root.
+  **This matters:** `bootdev run <hash>` executes from your cwd and invokes
+  `uv run main.py`, while the agent's sandbox is the *relative* path
+  `./calculator`. Both only resolve correctly from the repo root. Always run —
+  and always paste the grader hash — from the repo root.
 - **Config:** `src/ai_agent/config.py` (`MAX_CHARS = 10000`). Import as
   `from ai_agent.config import MAX_CHARS`.
 - **Path-validation pattern** (reused by every tool function):
@@ -98,10 +103,38 @@ first to pick up where we left off.
     parens — the source of the mysterious `= ( {...} )` in two files. Harmless
     once the comma's gone (parenthesised dict); worth spotting.
 
+- **ch3/L4 (2026-07-12)** — "Calling Functions". The agent now actually *runs* the
+  tool it picks. `call_function(tool_call, verbose)` added to `call_functions.py`:
+  parses the JSON arg string, prints the call, dispatches via a
+  `function_map: dict[str, Callable[..., str]]`, injects
+  `function_args["working_directory"] = "./calculator"`, and returns a **tool
+  message** (`role` / `tool_call_id` / `content`). `main.py` calls it in place of
+  the old print, raises on empty content, and prints `-> {content}` when verbose.
+  All four tools verified working end-to-end (list, read, write, run tests.py).
+  - **Typing:** took the SDK's real types over the lesson's loose ones —
+    `tool_call: ChatCompletionMessageFunctionToolCall` (the `.type == "function"`
+    guard in `main.py` is what narrows the union to it) and
+    `-> ChatCompletionToolMessageParam` (a TypedDict, so the three message keys are
+    checked at edit time). `function_args: dict[str, Any]` — `json.loads` returns
+    `Any`; that annotation marks the trust boundary honestly.
+  - **`Callable[..., str]`:** the `...` deliberately skips parameter checking (the
+    four functions have four different signatures); the `str` is the one guarantee
+    they share, and it's what makes `"content": result` type-check.
+  - **Gotcha — "unreachable code":** `if not result_message:` is dead code. A
+    TypedDict with required keys can never be empty, so it's always truthy. Test
+    the thing that *can* be empty: `if not result_message["content"]:`.
+  - **Entry-point fix (see Project Conventions):** L2/L3 passed while being run
+    from `src/ai_agent/`, because those lessons only *printed* the intended call —
+    `working_directory` was never used, so cwd didn't matter. L4 is the first
+    lesson that actually executes, so cwd started mattering and the two
+    requirements collided. Fixed with `main()` + root launcher rather than
+    flattening the src-layout.
+
 ### Next up
-- **ch3/L4** — Matt picks this up next session. Likely: actually *call* the
-  requested function (dispatch name → real function, inject `working_directory`),
-  then feed the result back to the model (steps 4–5 of the agent loop).
+- **ch3/L5** — 3 lessons left in the course. Presumably: append the tool message to
+  `messages` and send it back so the model can *use* the result (the lesson closed
+  with "we aren't passing the function call results back to the LLM just yet"),
+  then loop until the model stops asking for tools.
 
 ### Open items
 - ~~**`temperature=0` removed from `main.py`'s `create` call** during ch3/L2~~ —
@@ -113,6 +146,16 @@ first to pick up where we left off.
 - Fixed docstrings added to `get_files_info` and `write_file` (Google style).
 - ~~Watch for a stray `calulator/` dir from a typo'd test arg~~ — resolved:
   removed the dir, Matt fixed the `"calulator"` typo in `test_write_file.py:4`.
+- **Hardening — the sandbox root is relative and hardcoded.** `call_function` sets
+  `working_directory` to the *relative* `"./calculator"`, so the agent's sandbox
+  silently relocates depending on where you launch from. Proved it: running from
+  `src/ai_agent/` made `write_file` `makedirs` a brand-new phantom
+  `src/ai_agent/calculator/` and drop the file in there. The path validation was
+  never at fault — it correctly guarded the boundary it was *given*. **A sandbox is
+  only as good as the thing that defines its boundary.** Grown-up fix (post-course):
+  resolve the sandbox root to an absolute path once at startup, fail loudly if it
+  doesn't already exist, and stop `write_file` conjuring directories into being.
+  Belongs in `config.py` next to `MAX_CHARS`.
 - **Hardening (later polish pass):** `run_python_file` uses the literal
   `"python"` in the command list to satisfy the boot.dev grader. For real-world
   robustness, swap to `sys.executable` (the exact interpreter running the
