@@ -1,11 +1,19 @@
 from ai_agent.functions.get_file_content import get_file_content
+from pathlib import Path
 
-# Truncation check — don't print the full contents, just the shape of the result
-result = get_file_content("calculator", "lorem.txt")
-print(f"lorem.txt length: {len(result)}")
-print(f"lorem.txt truncated: {'truncated' in result}")
 
-print(get_file_content("calculator", "main.py"))
-print(get_file_content("calculator", "pkg/calculator.py"))
-print(get_file_content("calculator", "/bin/cat"))
-print(get_file_content("calculator", "pkg/does_not_exist.py"))
+
+def test_get_file_content_returns_contents(tmp_path: Path):
+    """Reading a file returns its text contents."""
+    test_file = tmp_path/"test.txt"
+    test_file.write_text("So long and thanks for all the fish")
+    result = get_file_content(str(tmp_path), "test.txt")
+    assert "fish" in result
+
+
+
+def test_get_file_content_rejects_escape(tmp_path: Path):
+    """A path outside the working directory returns an Error string."""
+    result = get_file_content(str(tmp_path), "../")
+    assert result.startswith("Error:")
+

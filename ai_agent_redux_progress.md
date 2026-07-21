@@ -15,7 +15,7 @@ course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
 | Phase | Task | State |
 |---|---|---|
 | **0** Bench prep | new files stubbed | ✅ done |
-| **1** Safety net | 1.1 print-scripts → pytest | in progress (1.1.1 ✅) |
+| **1** Safety net | 1.1 print-scripts → pytest | in progress (1.1.1 ✅ 1.1.2 ✅) |
 | | 1.2 extract `WORKING_DIR` to config | not started |
 | | 1.3 centralise path resolution + close symlink escape | not started |
 | **2** Control | 2.1 approval gate | not started |
@@ -29,6 +29,20 @@ course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
 ---
 
 ## Change log (newest first)
+
+### 2026-07-21 — Block 1.1.2: get_files_info + get_file_content → pytest
+
+Paired. Rewrote both from print-scripts to two pytest functions each, using
+`tmp_path` (annotated `tmp_path: Path`):
+- `test_get_files_info.py` — lists contents (creates a file first, asserts name +
+  `is_dir` format); rejects `"../"` escape.
+- `test_get_file_content.py` — returns file contents (substring check); rejects
+  `"../"` escape.
+
+Old print-scripts removed (get_files_info) / commented for reference (get_file_content).
+Optional truncation test for get_file_content noted but not taken — 2 tests suffices.
+
+**Verification:** each file `uv run python -m pytest <file> -v` → 2 passed.
 
 ### 2026-07-21 — Block 1.1.1: test_write_file.py → pytest
 
