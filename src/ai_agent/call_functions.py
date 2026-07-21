@@ -3,6 +3,8 @@
 from collections.abc import Callable
 import json
 from typing import Any
+from ai_agent.config import WORKING_DIR
+
 
 from openai.types.chat import (
     ChatCompletionMessageFunctionToolCall,
@@ -64,7 +66,7 @@ def call_function(
             "content": f"Error: Unknown function: {function_name}",
         }
     
-    function_args["working_directory"] = "./calculator"
+    function_args["working_directory"] = WORKING_DIR
 
     result: str = function_map[function_name](**function_args)
     return {

@@ -16,7 +16,7 @@ course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
 |---|---|---|
 | **0** Bench prep | new files stubbed | ✅ done |
 | **1** Safety net | 1.1 print-scripts → pytest | ✅ done |
-| | 1.2 extract `WORKING_DIR` to config | not started |
+| | 1.2 extract `WORKING_DIR` to config | ✅ done |
 | | 1.3 centralise path resolution + close symlink escape | not started |
 | **2** Control | 2.1 approval gate | not started |
 | | 2.2 `edit_file` tool + diff | not started |
@@ -29,6 +29,18 @@ course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
 ---
 
 ## Change log (newest first)
+
+### 2026-07-21 — Task 1.2: extract WORKING_DIR to config
+
+Solo (Matt). Added `WORKING_DIR: str = os.path.realpath("./calculator")` to
+`config.py`; swapped the hardcoded `"./calculator"` literal at
+`call_functions.py:69` for the imported constant. `realpath` now resolves the
+sandbox root to a single canonical absolute path (the reference point Phase 1.3
+containment checks will compare against). Only the intended literal remains, in
+`config.py`.
+
+**Verification (1.2.3):** `uv run python -m ai_agent.main "list the files…"` →
+agent calls `get_files_info` and lists `calculator/` contents as before.
 
 ### 2026-07-21 — Blocks 1.1.3 + 1.1.4: run_python_file → pytest; Task 1.1 done
 
