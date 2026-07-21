@@ -15,7 +15,7 @@ course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
 | Phase | Task | State |
 |---|---|---|
 | **0** Bench prep | new files stubbed | ✅ done |
-| **1** Safety net | 1.1 print-scripts → pytest | in progress (1.1.1 ✅ 1.1.2 ✅) |
+| **1** Safety net | 1.1 print-scripts → pytest | ✅ done |
 | | 1.2 extract `WORKING_DIR` to config | not started |
 | | 1.3 centralise path resolution + close symlink escape | not started |
 | **2** Control | 2.1 approval gate | not started |
@@ -29,6 +29,18 @@ course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
 ---
 
 ## Change log (newest first)
+
+### 2026-07-21 — Blocks 1.1.3 + 1.1.4: run_python_file → pytest; Task 1.1 done
+
+Paired. Rewrote `test_run_python_file.py`:
+- `test_run_python_file_captures_output` — writes a tiny script, runs it, asserts
+  its STDOUT is in the result (real subprocess).
+- `test_run_python_file_rejects_non_python` — a `.txt` file returns `Error:`.
+
+**Task 1.1 complete** — all four print-scripts are now real pytest.
+
+**Verification (1.1.4):** `uv run python -m pytest -v` → **8 passed, 8 skipped**
+(8 migrated tests green; the 8 forward-stubs report skipped, not false-passes).
 
 ### 2026-07-21 — Block 1.1.2: get_files_info + get_file_content → pytest
 
