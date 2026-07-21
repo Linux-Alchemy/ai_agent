@@ -1,0 +1,68 @@
+# ai_agent v2 (Redux) — Progress Log
+
+Tracks what has changed versus the original boot.dev **"project complete"**
+baseline, so the final writeup is honest about what's ours versus what the
+course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
+
+**Baseline reference:** commit `de92b4a` ("final commit, project complete") —
+~200 lines, four tools, `print(...)` "tests" you eyeball, hardcoded
+`./calculator` working dir, no approval gate, no process isolation.
+
+---
+
+## Status board
+
+| Phase | Task | State |
+|---|---|---|
+| **0** Bench prep | new files stubbed | ✅ done |
+| **1** Safety net | 1.1 print-scripts → pytest | in progress (1.1.1 ✅) |
+| | 1.2 extract `WORKING_DIR` to config | not started |
+| | 1.3 centralise path resolution + close symlink escape | not started |
+| **2** Control | 2.1 approval gate | not started |
+| | 2.2 `edit_file` tool + diff | not started |
+| **3** Security showcase | 3.1 prompt-injection demo + mitigation | not started |
+| | 3.2 Bubblewrap process boundary | not started |
+| **4** Polish | 4.1 Rich terminal interface | not started |
+| | 4.2 final report + JSONL audit log | not started |
+| | 4.3 README as changelog | not started |
+
+---
+
+## Change log (newest first)
+
+### 2026-07-21 — Block 1.1.1: test_write_file.py → pytest
+
+Paired. Rewrote `tests/test_write_file.py` from print-scripts to two pytest
+functions using `tmp_path`:
+- `test_write_file_reports_char_count` — asserts `"Success"` in result (and the
+  char count reflects the content length; input-verifies-output).
+- `test_write_file_rejects_escape` — a `/tmp/...` path returns an `Error:` string.
+
+Old print-scripts left commented in-file for reference (Matt tidying next).
+
+**Verification:** `uv run python -m pytest tests/test_write_file.py -v` → 2 passed.
+
+### 2026-07-21 — Phase 0: bench prep
+
+Prepared the workbench ahead of Task 1.1. **No existing files removed**
+(tidy-as-we-go: old files stay until their replacement is proven).
+
+**New source stubs** (signature + contract docstring + `# TODO <block>` marker,
+`...` bodies — import cleanly, do nothing yet):
+- `src/ai_agent/sandbox.py` — `resolve_in_workdir` (fills at 1.3.1)
+- `src/ai_agent/approval.py` — `DANGEROUS`, `needs_approval`, `confirm` (fills at 2.1.1)
+- `src/ai_agent/functions/edit_file.py` — `edit_file`; schema left as a TODO comment (fills at 2.2.1/2.2.2)
+- `src/ai_agent/report.py` — `RunReport` dataclass (fills at 4.2.1)
+
+**New test stubs** (named functions with `pytest.skip("stub …")` bodies, so
+they report **SKIPPED**, never a false pass):
+- `tests/test_sandbox.py` — 3 tests (fills at 1.3.4)
+- `tests/test_edit_file.py` — 3 tests (fills at 2.2.4)
+- `tests/test_injection.py` — 2 tests (fills at 3.1.4)
+
+**Verification:**
+- `uv run python -c "import ai_agent.sandbox, ai_agent.approval, ai_agent.report, ai_agent.functions.edit_file"` → all four import OK.
+- `uv run python -m pytest tests/test_sandbox.py tests/test_edit_file.py tests/test_injection.py -v` → 8 skipped.
+
+**Known noise (accepted):** the stub files show unused-import / unfilled-body
+warnings in the editor until their blocks are filled — expected state of a stub.
