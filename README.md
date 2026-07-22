@@ -88,10 +88,9 @@ are the things that need fixing before it grows up.
   As it stands, launching from the wrong directory silently moves the sandbox — and
   `write_file` will happily conjure a fresh one into being. A sandbox is only as
   good as the thing that defines its boundary.
-- **No targeted-edit tool.** `write_file` overwrites whole files, so changing one
-  line means the model regenerates the entire file from memory — and drifts. Needs
-  an `edit_file(path, old_string, new_string)` that fails when the old string isn't
-  found. You can't prompt your way out of a bad tool.
+- **Whole-file writes only.** `write_file` overwrites whole files, so changing one
+  line means the model regenerates the entire file from memory and may drift. A
+  targeted-edit tool is deliberately outside the reduced project scope.
 - **`run_python_file` shells out to the literal `"python"`** to satisfy the course
   grader. Should be `sys.executable` — the interpreter actually running the process.
 - **No sanity check on what the model writes.** It can and will report success on a

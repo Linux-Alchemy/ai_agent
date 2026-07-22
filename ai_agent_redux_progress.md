@@ -19,16 +19,70 @@ course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
 | | 1.2 extract `WORKING_DIR` to config | ✅ done |
 | | 1.3 centralise path resolution + close symlink escape | not started |
 | **2** Control | 2.1 approval gate | not started |
-| | 2.2 `edit_file` tool + diff | not started |
-| **3** Security showcase | 3.1 prompt-injection demo + mitigation | not started |
-| | 3.2 Bubblewrap process boundary | not started |
+| | 2.2 `edit_file` tool + diff | **CUT — removed from scope** |
+| **3** Execution isolation | 3.2 Bubblewrap process boundary | not started |
 | **4** Polish | 4.1 Rich terminal interface | not started |
-| | 4.2 final report + JSONL audit log | not started |
+| | 4.2 final report + JSONL audit log | **CUT — removed from scope** |
 | | 4.3 README as changelog | not started |
+| **Optional** Security showcase | 3.1 prompt-injection demo + mitigation | deferred until after Phase 4 |
+| **Housekeeping** | remove retired cut-feature stubs | ✅ done |
+
+**Retired Phase 0 artifacts removed:** `src/ai_agent/functions/edit_file.py`,
+`src/ai_agent/report.py`, and `tests/test_edit_file.py` were deleted during the
+2026-07-22 housekeeping pass. `tests/test_injection.py` remains as the optional
+task's stub.
+
+---
+
+## ▶ Resume here
+
+**Next: Task 1.3** — fill `resolve_in_workdir` in `sandbox.py` (stub + full
+contract docstring already in place), swap the four tools' inline containment
+blocks for it, then write the symlink-escape test (1.3.4 — the first adversarial
+test). Mode not yet chosen. Pair session via Obie-Wan.
 
 ---
 
 ## Change log (newest first)
+
+### 2026-07-22 — Reduced-scope housekeeping complete
+
+Removed only the inert Phase 0 artifacts belonging to the two cut features:
+
+- Deleted `src/ai_agent/functions/edit_file.py` (cut Task 2.2).
+- Deleted `src/ai_agent/report.py` (cut Task 4.2).
+- Deleted `tests/test_edit_file.py` (cut Task 2.2 test stub).
+- Updated the README's targeted-edit limitation to state that whole-file writes
+  are an accepted boundary of the reduced scope.
+
+Preserved all in-scope work, including `sandbox.py`, `approval.py`, the four
+existing tools and migrated tests, and optional `tests/test_injection.py`.
+Reference audit found no dangling production imports or cut-task TODOs.
+
+**Verification:** `uv run python -m pytest -v` → **8 passed, 5 skipped** in
+0.26s. The skips are exactly the three Task 1.3 sandbox stubs and two optional
+Task 3.1 injection stubs.
+
+The active resume point remains **Task 1.3**.
+
+### 2026-07-22 — Project rescope: five core upgrades + one optional
+
+Reduced the remaining build to fit the available time while preserving the
+security-hardening work already underway:
+
+- **Kept:** pytest migration, symlink-safe sandboxing, approval gate,
+  Bubblewrap execution isolation, Rich terminal output, and final README polish.
+- **Cut:** Task 2.2 (`edit_file`) and Task 4.2 (run report + JSONL audit).
+- **Deferred:** Task 3.1 (prompt-injection demo + mitigation) moved after Phase 4
+  under **Optional**. Skipping it does not block core completion.
+- **Documents updated:** `OUTLINE.md` now defines the reduced scope; `PLAN.md`
+  preserves the cut task addresses, updates phase checkpoints and estimates, and
+  moves the showcase to the end.
+- **Repository reality at rescope:** the Phase 0 stubs for both cut features
+  still existed as inert prep artifacts; they were removed in the housekeeping
+  entry above.
+
+The active resume point remains **Task 1.3**.
 
 ### 2026-07-21 — Task 1.2: extract WORKING_DIR to config
 
@@ -89,18 +143,21 @@ Prepared the workbench ahead of Task 1.1. **No existing files removed**
 `...` bodies — import cleanly, do nothing yet):
 - `src/ai_agent/sandbox.py` — `resolve_in_workdir` (fills at 1.3.1)
 - `src/ai_agent/approval.py` — `DANGEROUS`, `needs_approval`, `confirm` (fills at 2.1.1)
-- `src/ai_agent/functions/edit_file.py` — `edit_file`; schema left as a TODO comment (fills at 2.2.1/2.2.2)
-- `src/ai_agent/report.py` — `RunReport` dataclass (fills at 4.2.1)
+- `src/ai_agent/functions/edit_file.py` — `edit_file`; schema left as a TODO
+  comment (Task 2.2 later cut; stub removed 2026-07-22)
+- `src/ai_agent/report.py` — `RunReport` dataclass (Task 4.2 later cut; stub
+  removed 2026-07-22)
 
 **New test stubs** (named functions with `pytest.skip("stub …")` bodies, so
 they report **SKIPPED**, never a false pass):
 - `tests/test_sandbox.py` — 3 tests (fills at 1.3.4)
-- `tests/test_edit_file.py` — 3 tests (fills at 2.2.4)
-- `tests/test_injection.py` — 2 tests (fills at 3.1.4)
+- `tests/test_edit_file.py` — 3 tests (Task 2.2 later cut; stub removed 2026-07-22)
+- `tests/test_injection.py` — 2 tests (deferred with optional Task 3.1.4)
 
 **Verification:**
 - `uv run python -c "import ai_agent.sandbox, ai_agent.approval, ai_agent.report, ai_agent.functions.edit_file"` → all four import OK.
 - `uv run python -m pytest tests/test_sandbox.py tests/test_edit_file.py tests/test_injection.py -v` → 8 skipped.
 
-**Known noise (accepted):** the stub files show unused-import / unfilled-body
-warnings in the editor until their blocks are filled — expected state of a stub.
+**Known noise (accepted at the time):** active stubs show unused-import /
+unfilled-body warnings until their blocks are filled. The cut-feature stubs were
+removed in the 2026-07-22 housekeeping pass.

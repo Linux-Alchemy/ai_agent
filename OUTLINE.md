@@ -8,17 +8,25 @@
 ## What
 
 Take the existing agent (`Linux-Alchemy/ai_agent`, ~200 lines, four tools,
-working-directory sandbox) and evolve it through eight deliberate upgrades
-across four phases:
+working-directory sandbox) and evolve it through five focused upgrades across
+four core phases:
 
 1. **Safety net** — migrate print-based tests to basic pytest; fix the
    sandbox root and close symlink escapes.
-2. **Control** — approval gate for writes/execution (`--auto-approve` to
-   skip); a targeted `edit_file` tool with diff output.
-3. **Security showcase** — a documented prompt-injection attack and its
-   mitigation; a Bubblewrap process boundary around code execution.
-4. **Polish** — Rich terminal interface; end-of-run report with JSONL
-   audit logging.
+2. **Control** — add an approval gate for writes and execution, with
+   `--auto-approve` for trusted runs.
+3. **Execution isolation** — put a Bubblewrap process boundary around code
+   execution and fail closed when it is unavailable.
+4. **Polish** — add a restrained Rich terminal interface and finish the README.
+
+After the core build, one **Optional** security showcase remains: reproduce an
+indirect prompt-injection attack, add prompt/result-framing mitigations, and
+document their limitations. It can be skipped without leaving the core project
+incomplete.
+
+The previously planned `edit_file` tool and end-of-run JSONL report are out of
+scope. Their reserved task addresses remain marked `[CUT]` in `PLAN.md` so old
+references do not acquire exciting new meanings overnight.
 
 ## Why
 
@@ -47,7 +55,8 @@ across four phases:
 
 ## Done Means
 
-- All eight upgrades merged, each phase a commit checkpoint.
-- README updated per phase: limitations list evolves into a changelog of
-  fixes, plus the documented injection demo (attack → mitigation → test).
+- All five core upgrades are complete, with each phase passing its checkpoint.
+- README explains how to run the agent, what was hardened, and which limitations
+  remain. If the optional showcase is completed, it also documents the injection
+  demo from attack through mitigation and test.
 - `uv run python -m pytest -v` green; agent still fixes the calculator bug.
