@@ -2,6 +2,7 @@ import os
 from openai.types.chat import ChatCompletionToolParam
 
 from ai_agent.config import MAX_CHARS
+from ai_agent.sandbox import resolve_in_workdir
 
 
 def get_file_content(working_directory: str, file_path: str) -> str:
@@ -20,15 +21,10 @@ def get_file_content(working_directory: str, file_path: str) -> str:
         or a standard-library call raises.
     """
     try:
-        working_dir_abs: str = os.path.abspath(working_directory)
-        target_file: str = os.path.normpath(os.path.join(working_dir_abs, file_path))
+        target_file: str | None = resolve_in_workdir(working_directory, file_path)
+        if target_file is None:
+            return f'Error: Cannot resolve "{file_path}" as it is outside the permitted directory'
 
-        valid_target_file: bool = (
-            os.path.commonpath([working_dir_abs, target_file]) == working_dir_abs
-        )
-
-        if not valid_target_file:
-            return f'Error: Cannot read "{file_path}" as it is outside the permitted working directory'
         if not os.path.isfile(target_file):
             return f'Error: File not found or is not a regular file: "{file_path}"'
 

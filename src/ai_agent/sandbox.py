@@ -16,4 +16,14 @@ def resolve_in_workdir(working_directory: str, file_path: str) -> str | None:
     Returns:
         The resolved absolute path if contained, otherwise None.
     """
-    ...  # TODO 1.3.1: join + realpath, then commonpath containment check
+    working_dir_abs: str = os.path.abspath(working_directory)
+    target_file: str = os.path.realpath(os.path.join(working_dir_abs, file_path))
+
+    valid_target_file: bool = (
+        os.path.commonpath([working_dir_abs, target_file]) == working_dir_abs
+    )
+
+    if valid_target_file:
+        return target_file
+    return None
+

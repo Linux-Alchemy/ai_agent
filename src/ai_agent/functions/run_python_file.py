@@ -1,6 +1,7 @@
 import os
 import subprocess
 from openai.types.chat import ChatCompletionToolParam
+from ai_agent.sandbox import resolve_in_workdir
 
 
 def run_python_file(
@@ -27,13 +28,10 @@ def run_python_file(
 
     try:
         working_dir_abs: str = os.path.abspath(working_directory)
-        target_file: str = os.path.normpath(os.path.join(working_dir_abs, file_path))
-        valid_target_file: bool = (
-            os.path.commonpath([working_dir_abs, target_file]) == working_dir_abs
-        )
+        target_file: str | None = resolve_in_workdir(working_dir_abs, file_path)
+        if target_file is None:
+            return f'Error: Cannot resolve "{file_path}" as it is outside the permitted directory'
 
-        if not valid_target_file:
-            return f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory'
         if not os.path.isfile(target_file):
             return f'Error: "{file_path}" does not exist or is not a regular file'
         if not target_file.endswith(".py"):
