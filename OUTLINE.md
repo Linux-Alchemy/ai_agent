@@ -8,25 +8,23 @@
 ## What
 
 Take the existing agent (`Linux-Alchemy/ai_agent`, ~200 lines, four tools,
-working-directory sandbox) and evolve it through five focused upgrades across
-four core phases:
+working-directory sandbox) and evolve it through three focused upgrades across
+three core phases:
 
 1. **Safety net** — migrate print-based tests to basic pytest; fix the
    sandbox root and close symlink escapes.
 2. **Control** — add an approval gate for writes and execution, with
    `--auto-approve` for trusted runs.
-3. **Execution isolation** — put a Bubblewrap process boundary around code
-   execution and fail closed when it is unavailable.
-4. **Polish** — add a restrained Rich terminal interface and finish the README.
+3. **Polish** — add a restrained Rich terminal interface and finish the README.
 
 After the core build, one **Optional** security showcase remains: reproduce an
 indirect prompt-injection attack, add prompt/result-framing mitigations, and
 document their limitations. It can be skipped without leaving the core project
 incomplete.
 
-The previously planned `edit_file` tool and end-of-run JSONL report are out of
-scope. Their reserved task addresses remain marked `[CUT]` in `PLAN.md` so old
-references do not acquire exciting new meanings overnight.
+OS-level process isolation is outside the current build. Bubblewrap (`bwrap`) is
+recorded in `PLAN.md` as a possible future hardening upgrade once its namespace
+and bind-mount model can be implemented and verified properly.
 
 ## Why
 
@@ -39,7 +37,7 @@ references do not acquire exciting new meanings overnight.
 ## Stack & Conventions
 
 - Python 3.13, `uv`, src layout (existing). OpenRouter via OpenAI SDK.
-- pytest for testing; Bubblewrap (`bwrap`) for isolation; Rich for output.
+- pytest for testing; Rich for output.
 - Arch Linux (Omarchy), Neovim.
 
 ## Constraints
@@ -55,7 +53,7 @@ references do not acquire exciting new meanings overnight.
 
 ## Done Means
 
-- All five core upgrades are complete, with each phase passing its checkpoint.
+- All three core upgrades are complete, with each phase passing its checkpoint.
 - README explains how to run the agent, what was hardened, and which limitations
   remain. If the optional showcase is completed, it also documents the injection
   demo from attack through mitigation and test.

@@ -17,14 +17,12 @@ course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
 | **0** Bench prep | new files stubbed | ✅ done |
 | **1** Safety net | 1.1 print-scripts → pytest | ✅ done |
 | | 1.2 extract `WORKING_DIR` to config | ✅ done |
-| | 1.3 centralise path resolution + close symlink escape | not started |
+| | 1.3 centralise path resolution + close symlink escape | ✅ done |
 | **2** Control | 2.1 approval gate | not started |
-| | 2.2 `edit_file` tool + diff | **CUT — removed from scope** |
-| **3** Execution isolation | 3.2 Bubblewrap process boundary | not started |
-| **4** Polish | 4.1 Rich terminal interface | not started |
-| | 4.2 final report + JSONL audit log | **CUT — removed from scope** |
-| | 4.3 README as changelog | not started |
-| **Optional** Security showcase | 3.1 prompt-injection demo + mitigation | deferred until after Phase 4 |
+| **3** Polish | 3.1 Rich terminal interface | not started |
+| | 3.2 README as changelog | not started |
+| **Optional 4** Security showcase | 4.1 prompt-injection demo + mitigation | deferred until after Phase 3 |
+| **Future** Process isolation | Bubblewrap boundary | possible later upgrade |
 | **Housekeeping** | remove retired cut-feature stubs | ✅ done |
 
 **Retired Phase 0 artifacts removed:** `src/ai_agent/functions/edit_file.py`,
@@ -36,14 +34,26 @@ task's stub.
 
 ## ▶ Resume here
 
-**Next: Task 1.3** — fill `resolve_in_workdir` in `sandbox.py` (stub + full
-contract docstring already in place), swap the four tools' inline containment
-blocks for it, then write the symlink-escape test (1.3.4 — the first adversarial
-test). Mode not yet chosen. Pair session via Obie-Wan.
+**Next: Task 2.1** — implement the approval gate in `approval.py`, thread
+`--auto-approve` through the agent loop, and gate writes and executions at the
+central dispatch point. Mode not yet chosen. Pair session via Obie-Wan.
 
 ---
 
 ## Change log (newest first)
+
+### 2026-07-24 — Task 1.3 complete; remaining plan renumbered
+
+Implemented `resolve_in_workdir`, routed all four tools through it, and added
+contained-path, `../` escape, and symlink-escape tests. The containment logic now
+lives in one helper.
+
+**Verification (1.3.5):** `uv run python -m pytest -v` → **11 passed, 2 skipped**
+in 1.06s. The two skips are the deferred Optional Phase 4 injection tests.
+
+Reduced the remaining core plan to Phase 2 control and Phase 3 polish, moved the
+injection showcase to Optional Phase 4, and recorded Bubblewrap process
+isolation as a possible future upgrade.
 
 ### 2026-07-22 — Reduced-scope housekeeping complete
 
@@ -152,7 +162,7 @@ Prepared the workbench ahead of Task 1.1. **No existing files removed**
 they report **SKIPPED**, never a false pass):
 - `tests/test_sandbox.py` — 3 tests (fills at 1.3.4)
 - `tests/test_edit_file.py` — 3 tests (Task 2.2 later cut; stub removed 2026-07-22)
-- `tests/test_injection.py` — 2 tests (deferred with optional Task 3.1.4)
+- `tests/test_injection.py` — 2 tests (now deferred with Optional Task 4.1.4)
 
 **Verification:**
 - `uv run python -c "import ai_agent.sandbox, ai_agent.approval, ai_agent.report, ai_agent.functions.edit_file"` → all four import OK.

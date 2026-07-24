@@ -5,7 +5,7 @@
 
 **How to use this file:** work top to bottom, one block at a time. Check boxes
 as you go. Do not cross a Phase Checkpoint until it passes. Blocks are addressed
-as Phase.Task.Block (e.g. 2.3.1) — that address is how work gets discussed,
+as Phase.Task.Block (e.g. 2.1.3) — that address is how work gets discussed,
 delegated, and reported.
 
 **This is a learning continuation.** The boot.dev course built the engine; this
@@ -14,10 +14,10 @@ portfolio piece. Default posture: read the skeleton, understand the concept
 named in the pseudocode, write the body yourself. Delegate a block only when
 you've decided it's not the one worth typing by hand.
 
-**Scope note (2026-07-22):** `OUTLINE.md` and this plan now define the reduced
-core build: sandbox hardening, the approval gate, Bubblewrap isolation, and Rich
-output. `edit_file` and the JSONL run report are cut. The prompt-injection
-showcase is optional and appears at the end of this document.
+**Scope note (2026-07-24):** `OUTLINE.md` and this plan define the reduced core
+build: sandbox path hardening, the approval gate, and Rich output. The
+prompt-injection showcase is optional and appears after the core phases.
+OS-level process isolation is recorded as a possible future upgrade.
 
 **Two standing constraints, every block:**
 - **Lean.** No unnecessary code, no speculative abstraction. If a block can be
@@ -30,7 +30,7 @@ showcase is optional and appears at the end of this document.
 
 ## Agent Delegation Protocol
 
-When handed a block reference (e.g. "do 2.3.1"):
+When handed a block reference (e.g. "do 2.1.3"):
 1. Read the relevant Phase header and Task header first. Then execute ONLY the
    named block(s).
 2. Respect the task's Don't Touch list. No wandering, no opportunistic
@@ -52,7 +52,7 @@ When handed a block reference (e.g. "do 2.3.1"):
 ```
 ai_agent/
 ├── src/ai_agent/
-│   ├── main.py               # agent loop; gains REPL-free approval prompts pass through here
+│   ├── main.py               # agent loop; --auto-approve originates here
 │   ├── call_functions.py     # THE choke point — dispatch, wd injection, and approval gate
 │   ├── config.py             # MAX_CHARS; gains WORKING_DIR constant (P1)
 │   ├── prompts.py            # system prompt; optional injection-defence framing
@@ -62,7 +62,7 @@ ai_agent/
 │       ├── get_files_info.py     # uses sandbox helper (P1)
 │       ├── get_file_content.py   # uses sandbox helper (P1)
 │       ├── write_file.py         # uses sandbox helper (P1) + gated (P2)
-│       └── run_python_file.py    # uses sandbox helper (P1) + gated (P2) + bwrap (P3)
+│       └── run_python_file.py    # uses sandbox helper (P1) + gated (P2)
 ├── tests/                    # print-scripts → pytest (P1)
 │   ├── test_sandbox.py       # NEW (P1) — includes the symlink-escape attack test
 │   └── test_injection.py     # OPTIONAL — mitigation wiring regression test
@@ -81,8 +81,9 @@ model → main.py loop → call_function()
 
 ## Phase 1: Build the Safety Net
 
-**Phase goal:** Real tests exist, and the sandbox is genuinely closed. Nothing
-below this phase gets refactored without a net.
+**Phase goal:** Real tests exist, and direct tool paths cannot escape the
+working-directory boundary, including through symlinks. Nothing below this phase
+gets refactored without a net.
 **Time estimate:** ~2.5–3.5 hours
 **Files created / modified:** `sandbox.py` (new), `config.py`, all four
 `functions/*.py`, `call_functions.py`, `tests/` (rewritten), `test_sandbox.py`
@@ -245,20 +246,20 @@ already lives. One helper, four thin call sites.
 hold, so leave them. `main.py`.
 
 **Blocks:**
-- [ ] **1.3.1** — Write `resolve_in_workdir` in `sandbox.py` per the skeleton.
-- [ ] **1.3.2** — Replace the inline containment block in `write_file.py` and `run_python_file.py` with the helper.
-- [ ] **1.3.3** — Replace it in `get_file_content.py` and `get_files_info.py`.
-- [ ] **1.3.4** — Write `tests/test_sandbox.py`: one test for a normal contained path (returns a path), one for a `../` escape (returns `None`), and **one that creates a symlink via `tmp_path` pointing outside and asserts it's rejected**. → *That third test is your first adversarial test — you're attacking your own boundary and proving it holds.*
-- [ ] **1.3.5** — Verify: `uv run python -m pytest -v` → green, including the symlink-escape test.
+- [x] **1.3.1** — Write `resolve_in_workdir` in `sandbox.py` per the skeleton.
+- [x] **1.3.2** — Replace the inline containment block in `write_file.py` and `run_python_file.py` with the helper.
+- [x] **1.3.3** — Replace it in `get_file_content.py` and `get_files_info.py`.
+- [x] **1.3.4** — Write `tests/test_sandbox.py`: one test for a normal contained path (returns a path), one for a `../` escape (returns `None`), and **one that creates a symlink via `tmp_path` pointing outside and asserts it's rejected**. → *That third test is your first adversarial test — you're attacking your own boundary and proving it holds.*
+- [x] **1.3.5** — Verify: `uv run python -m pytest -v` → green, including the symlink-escape test.
 
 ---
 
 ### Phase 1 Checkpoint
-- [ ] `uv run python -m pytest -v` runs real pytest tests, all passing.
-- [ ] A symlink pointing outside the sandbox is provably rejected (test exists and passes).
-- [ ] Path-containment logic lives in exactly one place.
+- [x] `uv run python -m pytest -v` → 11 passed, 2 optional injection tests skipped.
+- [x] A symlink pointing outside the sandbox is provably rejected (test exists and passes).
+- [x] Path-containment logic lives in exactly one place.
 - [ ] The agent still runs end-to-end: `uv run python -m ai_agent.main "fix the bug"` behaves as before.
-- [ ] **Commit:** `git commit -m "Phase 1: pytest migration + symlink-safe sandbox"`
+- [x] **Committed:** implementation `71edba5`; sandbox tests and verification `93dbb5f`.
 
 ---
 
@@ -269,8 +270,8 @@ hold, so leave them. `main.py`.
 **Time estimate:** ~1.5–2 hours
 **Files created / modified:** `approval.py` (new), `call_functions.py`, `main.py`,
 and one approval test
-**Phase constraint:** No security-isolation work yet (that's Phase 3). The
-approval gate is a *UX/control* layer, not a sandbox. Keep it that way.
+**Phase constraint:** The approval gate is a *UX/control* layer, not process
+isolation or a sandbox. Keep it that way.
 
 ---
 
@@ -340,21 +341,6 @@ loop keep going). Don't gate the read-only tools.
 
 ---
 
-### Task 2.2: [CUT] The `edit_file` tool
-
-Cut on 2026-07-22 to reduce the project to its security-hardening and terminal
-polish goals. The original block addresses remain reserved so prior references
-do not silently point at different work.
-
-**Blocks:**
-- **2.2.1 [CUT]** — Implement targeted replacement logic.
-- **2.2.2 [CUT]** — Add schema and dispatch wiring.
-- **2.2.3 [CUT]** — Add the tool to the approval gate.
-- **2.2.4 [CUT]** — Add focused tests.
-- **2.2.5 [CUT]** — Verify the tool end to end.
-
----
-
 ### Phase 2 Checkpoint
 - [ ] Writes and executions prompt for approval; `--auto-approve` bypasses.
 - [ ] Denial is handled gracefully (agent loop continues, model sees the denial).
@@ -363,96 +349,10 @@ do not silently point at different work.
 
 ---
 
-## Phase 3: Isolate Code Execution
-
-**Phase goal:** Put a real OS-level boundary around code execution with
-Bubblewrap. This completes the core security-hardening scope.
-**Time estimate:** ~2.5–3.5 hours
-**Files created / modified:** `run_python_file.py`, `README.md`
-**Phase constraint:** Keep process isolation separate from path containment and
-the approval gate. Missing Bubblewrap must fail closed.
-
----
-
-### Task 3.2: Bubblewrap process boundary
-
-**File:** `run_python_file.py`, `README.md`
-
-Wrap the subprocess in `bwrap` so executed code runs with no network, a
-read-only view of only what it needs, and no access to the rest of your
-filesystem. This is the hardest task in the plan — Linux namespaces are genuinely
-new territory — and it's placed last in security precisely because Phase 1's
-tests will tell you if you break `run_python_file`'s existing contract.
-
-**Skeleton (the shape of the change, not the body):**
-```python
-# run_python_file.py — the command construction changes; the contract does not.
-# Current:
-#   command = ["python", target_file]
-# Becomes (conceptually):
-#   command = ["bwrap", *bwrap_flags(working_dir_abs), "python", target_file]
-#
-# where bwrap_flags yields the isolation arguments:
-def bwrap_flags(working_dir_abs: str) -> list[str]:
-    """Return the bubblewrap flags that confine execution.
-
-    Produces flags for: no network, a fresh /tmp, read-only bind of the
-    Python runtime, a bind of working_dir_abs as the only writable path,
-    and a locked-down default. Returns the flag list only — the caller
-    assembles the full command.
-    """
-    ...
-```
-
-**What it does:**
-1. Build the `bwrap` flag list: `--unshare-net` (no network), `--dev /dev`,
-   `--proc /proc`, `--tmpfs /tmp`, a read-only bind for the Python interpreter
-   and stdlib, and a read-write bind for `working_dir_abs` only. → *Each flag is
-   a Linux **namespace** boundary. `--unshare-net` gives the process its own
-   empty network namespace — no interfaces, so exfiltration over the network is
-   off the table regardless of what the code tries.*
-2. Prepend the flags to the existing `["python", target_file]` command; keep the
-   `subprocess.run(..., cwd=working_dir_abs, timeout=30)` call otherwise intact.
-3. Handle `bwrap` being absent: if the binary isn't found, return a clear
-   `Error:` telling the user to install it (`sudo pacman -S bubblewrap`). → *Don't
-   silently fall back to unsandboxed execution — that would defeat the point. Fail
-   loud, fail closed.*
-4. Document in README: what bwrap does, the flags chosen and why, and how to
-   install it. Note the known hole: this sandboxes *execution* but the approval
-   gate is still the backstop for *writes*.
-
-**Imports needed:** none new (`subprocess`, `os` already present).
-
-**Rules:** Fail closed — if `bwrap` is missing, error out; never run code
-unsandboxed as a "convenience." The tool's *return contract* (the docstring's
-Returns section) must still hold — Phase 1 tests are the proof. `--unshare-net`
-is non-negotiable; it's the headline guarantee.
-
-**Don't touch:** the sandbox path helper (that's about *file paths*, this is about
-*process isolation* — different layers, keep them separate). Other tools.
-
-**Blocks:**
-- [ ] **3.2.1** — Confirm `bwrap` is installed (`which bwrap`); if not, `sudo pacman -S bubblewrap`.
-- [ ] **3.2.2** — Write `bwrap_flags` returning the isolation flag list.
-- [ ] **3.2.3** — Prepend the flags to the command in `run_python_file`; add the missing-binary fail-closed check.
-- [ ] **3.2.4** — Manually verify isolation: run a script that tries `urllib.request.urlopen("http://example.com")` through the agent → it fails (no network). Note the result for the README.
-- [ ] **3.2.5** — Verify: `uv run python -m pytest -v` → `run_python_file` tests still green (contract preserved); the calculator still runs through the agent.
-- [ ] **3.2.6** — Write the README bwrap section (flags, why, install, known hole).
-
----
-
-### Phase 3 Checkpoint
-- [ ] Executed code runs under `bwrap` with no network; missing `bwrap` fails closed.
-- [ ] Existing `run_python_file` tests still pass (contract intact).
-- [ ] README explains the Bubblewrap boundary and its limitations honestly.
-- [ ] **Commit:** `git commit -m "Phase 3: isolate execution with bubblewrap"`
-
----
-
-## Phase 4: Polish
+## Phase 3: Polish
 
 **Phase goal:** Give the agent a restrained Rich terminal interface and finish
-the README. Deload week after the namespace climb.
+the README.
 **Time estimate:** ~1.5–2.5 hours
 **Files created / modified:** `main.py`, `call_functions.py`, `README.md`,
 `pyproject.toml` (add `rich`)
@@ -462,7 +362,7 @@ stop — that's not this phase.
 
 ---
 
-### Task 4.1: Rich terminal interface
+### Task 3.1: Rich terminal interface
 
 **File:** `main.py`, `call_functions.py`, `pyproject.toml`
 
@@ -487,30 +387,17 @@ prompts and tool results are the useful content; the interface should stay quiet
 displayed. Don't let Rich formatting leak into the strings sent back to the model
 (the model wants plain text; Rich is for the human's terminal).
 
-**Don't touch:** tool logic, sandbox, approval, bwrap. Any `.py` in `functions/`.
+**Don't touch:** tool logic, sandbox, or approval. Any `.py` in `functions/`.
 
 **Blocks:**
-- [ ] **4.1.1** — Follow pip-safety, obtain approval, then `uv add rich`; create a shared `Console`.
-- [ ] **4.1.2** — Add the thinking spinner and final-response panel in `main.py`.
-- [ ] **4.1.3** — Colour and frame tool calls/results in `call_functions.py` (human-facing output only).
-- [ ] **4.1.4** — Verify: `uv run python -m ai_agent.main "list files"` shows spinner + panelled output; model still receives plain-text results (spot-check with `--verbose`).
+- [ ] **3.1.1** — Follow pip-safety, obtain approval, then `uv add rich`; create a shared `Console`.
+- [ ] **3.1.2** — Add the thinking spinner and final-response panel in `main.py`.
+- [ ] **3.1.3** — Colour and frame tool calls/results in `call_functions.py` (human-facing output only).
+- [ ] **3.1.4** — Verify: `uv run python -m ai_agent.main "list files"` shows spinner + panelled output; model still receives plain-text results (spot-check with `--verbose`).
 
 ---
 
-### Task 4.2: [CUT] Final report + JSONL audit log
-
-Cut on 2026-07-22 to keep polish focused on the terminal interface. The original
-block addresses remain reserved so prior references stay unambiguous.
-
-**Blocks:**
-- **4.2.1 [CUT]** — Implement the `RunReport` tally.
-- **4.2.2 [CUT]** — Thread the report through the run.
-- **4.2.3 [CUT]** — Render the summary and append JSONL output.
-- **4.2.4 [CUT]** — Verify summary and audit output.
-
----
-
-### Task 4.3: README as changelog
+### Task 3.2: README as changelog
 
 **File:** `README.md`
 
@@ -520,44 +407,44 @@ was broken, what you did, what's still deliberately incomplete.
 **What it does:**
 1. Convert "Known limitations" into a concise changelog of the completed core
    phases — each phase's before/after in a couple of lines.
-2. Keep the honest holes visible: `confirm` is untested, Bubblewrap needs manual
-   installation, and prompt injection remains untreated unless the Optional
-   section is completed. → *A visible limitations list shows that the boundary
-   of the work is understood; it is not a confession booth.*
-3. Add a one-line "how to run" and the `bwrap` install note up top.
+2. Keep the honest holes visible: `confirm` is untested, executed Python has no
+   OS-level isolation, and prompt injection remains untreated unless the
+   Optional section is completed. → *A visible limitations list shows that the
+   boundary of the work is understood; it is not a confession booth.*
+3. Add a one-line "how to run" up top.
 
 **Rules:** Honest and lean. Don't dress up the holes; don't dwell on them either.
 
 **Don't touch:** any code — this is docs only.
 
 **Blocks:**
-- [ ] **4.3.1** — Rewrite the README: run instructions, phase changelog, honest limitations.
-- [ ] **4.3.2** — Verify: README renders on GitHub; every claim maps to something real in the repo.
+- [ ] **3.2.1** — Rewrite the README: run instructions, phase changelog, honest limitations.
+- [ ] **3.2.2** — Verify: README renders on GitHub; every claim maps to something real in the repo.
 
 ---
 
-### Phase 4 Checkpoint
+### Phase 3 Checkpoint
 - [ ] Output is Rich-formatted (spinner, panels, colour) — human-facing only.
 - [ ] README tells the reduced-scope build story honestly, holes included.
 - [ ] `uv run python -m pytest -v` green.
-- [ ] **Commit:** `git commit -m "Phase 4: add Rich UI and polish README"`
+- [ ] **Commit:** `git commit -m "Phase 3: add Rich UI and polish README"`
 
 ---
 
-## Optional: Security Showcase
+## Optional Phase 4: Security Showcase
 
-This section is outside the core completion path. Decide after Phase 4 whether
+This section is outside the core completion path. Decide after Phase 3 whether
 the portfolio value is worth the extra time. Skipping it does not leave any core
 phase incomplete.
 
-### Task 3.1: Prompt-injection demo and mitigation
+### Task 4.1: Prompt-injection demo and mitigation
 
 **File:** `tests/test_injection.py` (new), `prompts.py`, `call_functions.py`,
 `README.md`
 
 Plant a hostile instruction inside a file the agent reads, show the agent obeying
 it, then mitigate by framing tool results as untrusted data and pin the wiring as
-a regression test. The original `3.1.x` addresses are retained after the move.
+a regression test.
 
 **What it does:**
 1. **Attack:** create a sandbox file containing a hostile instruction, run the
@@ -578,20 +465,31 @@ a regression test. The original `3.1.x` addresses are retained after the move.
 mitigation as risk reduction, not prevention.
 
 **Don't touch:** tool-function logic, the sandbox helper, approval behaviour, or
-Bubblewrap configuration.
+process-execution behaviour.
 
 **Blocks:**
-- [ ] **3.1.1** — Reproduce the attack manually; note the agent's behaviour for the README.
-- [ ] **3.1.2** — Add the untrusted-data delimiter to tool results in `call_function`.
-- [ ] **3.1.3** — Add the injection-defence line to the system prompt in `prompts.py`.
-- [ ] **3.1.4** — Write `test_injection.py` asserting the mitigation is wired in.
-- [ ] **3.1.5** — Write the README section: attack → mitigation → honest limitations.
-- [ ] **3.1.6** — Verify: `uv run python -m pytest -v` green; README section reads clearly.
+- [ ] **4.1.1** — Reproduce the attack manually; note the agent's behaviour for the README.
+- [ ] **4.1.2** — Add the untrusted-data delimiter to tool results in `call_function`.
+- [ ] **4.1.3** — Add the injection-defence line to the system prompt in `prompts.py`.
+- [ ] **4.1.4** — Write `test_injection.py` asserting the mitigation is wired in.
+- [ ] **4.1.5** — Write the README section: attack → mitigation → honest limitations.
+- [ ] **4.1.6** — Verify: `uv run python -m pytest -v` green; README section reads clearly.
 
-### Optional Checkpoint
+### Optional Phase 4 Checkpoint
 - [ ] The attack is reproduced, mitigated, documented, and pinned by a wiring test.
 - [ ] The README distinguishes prompt-level mitigation from hard sandbox controls.
 - [ ] **Commit:** `git commit -m "Optional: document and mitigate prompt injection"`
+
+---
+
+## Possible Future Upgrade: OS-Level Process Isolation
+
+`run_python_file` currently limits the target path and execution time, but the
+child process is not isolated from the wider filesystem or network. Bubblewrap
+(`bwrap`) is a possible future hardening upgrade once its Linux namespace and
+bind-mount model is properly understood. If taken on, it should fail closed when
+`bwrap` is unavailable and should be planned as a separate phase rather than
+bolted casually onto the existing tool.
 
 ---
 
@@ -600,17 +498,17 @@ Bubblewrap configuration.
 | Phase | Off-limits |
 |---|---|
 | 1 | Tool *features* (test & protect only); `calculator/`; schemas |
-| 2 | Security isolation (Phase 3's job); read-only tools stay ungated |
-| 3 | Tool logic beyond the named edits; the sandbox path helper (different layer) |
-| 4 | All tool/sandbox/gate *behaviour* — presentation and docs only |
-| Optional | Tool logic, sandbox, approval behaviour, and Bubblewrap configuration |
+| 2 | Process isolation; read-only tools stay ungated |
+| 3 | All tool/sandbox/gate *behaviour* — presentation and docs only |
+| Optional 4 | Tool logic, sandbox, approval behaviour, and process execution |
 
 ---
 
 ## Change Log
 
-- **2026-07-22** — Reduced scope for available time: cut Task 2.2 (`edit_file`)
-  and Task 4.2 (run report + JSONL audit), retained Rich output, and moved Task
-  3.1 (prompt-injection showcase) to an Optional section after the core build.
+- **2026-07-24** — Reduced the remaining core to sandbox path hardening, the
+  approval gate, and Rich polish. Moved Bubblewrap process isolation to a
+  possible future upgrade, renumbered the remaining work sequentially, and kept
+  the prompt-injection showcase as Optional Phase 4.
 - **2026-07-22** — Marked Tasks 1.1 and 1.2 complete from the existing progress
-  log so the plan resumes at Task 1.3.
+  log; the plan then resumed at Task 1.3.
