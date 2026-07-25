@@ -333,7 +333,7 @@ loop keep going). Don't gate the read-only tools.
 **Don't touch:** the tool functions themselves; the sandbox helper. Schemas.
 
 **Blocks:**
-- [ ] **2.1.1** — Write `approval.py` (`DANGEROUS`, `needs_approval`, `confirm`) per the skeleton.
+- [x] **2.1.1** — Write `approval.py` (`DANGEROUS`, `needs_approval`, `confirm`) per the skeleton.
 - [ ] **2.1.2** — Add `--auto-approve` to argparse in `main.py` and thread it into `call_function`'s signature.
 - [ ] **2.1.3** — Insert the gate in `call_function` before dispatch; denial returns a tool message.
 - [ ] **2.1.4** — Add one pytest for `needs_approval` (dangerous+not-auto → True; read-only → False; auto → False). Leave `confirm` untested (it's stdin I/O — note that as a known, acceptable hole).

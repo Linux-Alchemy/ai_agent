@@ -18,7 +18,7 @@ course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
 | **1** Safety net | 1.1 print-scripts → pytest | ✅ done |
 | | 1.2 extract `WORKING_DIR` to config | ✅ done |
 | | 1.3 centralise path resolution + close symlink escape | ✅ done |
-| **2** Control | 2.1 approval gate | not started |
+| **2** Control | 2.1 approval gate | 🔨 in progress — 2.1.1 done |
 | **3** Polish | 3.1 Rich terminal interface | not started |
 | | 3.2 README as changelog | not started |
 | **Optional 4** Security showcase | 4.1 prompt-injection demo + mitigation | deferred until after Phase 3 |
@@ -34,13 +34,61 @@ task's stub.
 
 ## ▶ Resume here
 
-**Next: Task 2.1** — implement the approval gate in `approval.py`, thread
-`--auto-approve` through the agent loop, and gate writes and executions at the
-central dispatch point. Mode not yet chosen. Pair session via Obie-Wan.
+**Next: Block 2.1.2** — add `--auto-approve` to argparse in `main.py` and thread
+it into `call_function`'s signature. Then 2.1.3 (insert the gate before
+dispatch), 2.1.4 (pytest for `needs_approval`), 2.1.5 (manual verification).
+
+`approval.py` itself is finished (2.1.1). Paired mode — Matt writes, Obie-Wan
+reviews.
 
 ---
 
 ## Change log (newest first)
+
+### 2026-07-25 — Block 2.1.1: `approval.py` implemented
+
+Paired (Matt writing, Obie-Wan reviewing). Both functions now land in one
+expression each:
+
+- `needs_approval` — pure predicate, `function_name in DANGEROUS and not
+  auto_approve`. No I/O, so 2.1.4 can unit-test the decision without faking
+  stdin.
+- `confirm` — prints the pending tool name + args, reads `input("Approve
+  [y/N]?: ")`, normalises with `.strip().lower()`, returns `response in {"y",
+  "yes"}`. Default-deny: anything that isn't an explicit yes is a no.
+
+The expanded step-by-step `# TODO 2.1.1` scaffolding was written into the file
+first, then removed once both bodies were filled.
+
+**Review findings raised and fixed by Matt during the session:**
+
+1. **Inverted gate logic** — first draft read `... and auto_approve`, which would
+   have prompted only when `--auto-approve` was on and written files silently on
+   a normal run. Exactly backwards for a security gate.
+2. **Retry loop broke default-deny** — an intermediate version looped on invalid
+   input, so a bare Enter (`""`) retried forever instead of denying, contradicting
+   both the `[y/N]` prompt and the docstring. Loop dropped in favour of the
+   simple single-read version; a denial is cheap because the model just receives
+   a tool message and adapts.
+3. **Missing return on the deny path** — `return True` inside the `if` with
+   nothing after it, so the function fell through to an implicit `None` and
+   basedpyright flagged the `-> bool` contract. Collapsed to a direct expression
+   return, matching `needs_approval`'s shape.
+
+**Known, accepted holes (carried forward):**
+
+- `input()` raises `EOFError` on closed/piped stdin; not currently caught, so a
+  non-interactive run will traceback out of the gate rather than deny. Decision
+  deferred, not overlooked.
+- `confirm` stays untested by design (stdin I/O) — per plan block 2.1.4.
+- `approval.py` still has no module docstring, unlike its siblings.
+- `PLAN.md`'s skeleton types `function_args` as bare `dict`; the file uses
+  `dict[str, object]`. The file is correct for basedpyright's recommended mode;
+  the plan text has simply drifted.
+
+**Verification:** `uv run python -m pytest -q` → **11 passed, 2 skipped** in
+0.63s (unchanged — 2.1.1 adds no tests; that's 2.1.4). `uv run ruff check
+src/ai_agent/approval.py` → All checks passed.
 
 ### 2026-07-24 — Task 1.3 complete; remaining plan renumbered
 

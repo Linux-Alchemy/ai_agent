@@ -11,7 +11,7 @@ def needs_approval(function_name: str, auto_approve: bool) -> bool:
     Returns:
         True if the call is dangerous and auto_approve is off.
     """
-    ...  # TODO 2.1.1: pure predicate — name in DANGEROUS and not auto_approve
+    return function_name in DANGEROUS and not auto_approve
 
 
 def confirm(function_name: str, function_args: dict[str, object]) -> bool:
@@ -27,4 +27,6 @@ def confirm(function_name: str, function_args: dict[str, object]) -> bool:
     Returns:
         True only on an explicit yes; default-deny on anything else.
     """
-    ...  # TODO 2.1.1: print name + args, input("Approve? [y/N] "), default-deny
+    print(f"Need approval to run {function_name}, {function_args}")
+    response = input("Approve [y/N]?: ").strip().lower()
+    return response in {"y", "yes"}
