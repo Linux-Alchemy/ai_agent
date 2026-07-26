@@ -28,7 +28,7 @@ available_functions: list[ChatCompletionToolParam] = [
 
 
 def call_function(
-    tool_call: ChatCompletionMessageFunctionToolCall, verbose: bool = False
+    tool_call: ChatCompletionMessageFunctionToolCall, verbose: bool = False, auto_approve: bool = False
 ) -> ChatCompletionToolMessageParam:
     """Execute the tool call the model requested and wrap the result for the model.
 
@@ -39,6 +39,7 @@ def call_function(
         tool_call: A function tool call taken from `message.tool_calls`. Its
             `function.arguments` field is a JSON string of keyword arguments.
         verbose: If True, also print the parsed arguments alongside the name.
+        auto_approve: If True skips the human approval for dangerous commands
 
     Returns:
         A tool message (`role`, `tool_call_id`, `content`) carrying either the

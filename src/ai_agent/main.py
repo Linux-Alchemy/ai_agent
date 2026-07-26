@@ -34,6 +34,7 @@ def main() -> None:
     parser: ArgumentParser = ArgumentParser(description="Chatbot")
     parser.add_argument("user_prompt", type=str, help="User prompt")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    parser.add_argument("--auto-apporve", action="store_true", help="Enable YOLO mode. Use at your own risk")
     args: Namespace = parser.parse_args()
 
     if not isinstance(args.user_prompt, str):
