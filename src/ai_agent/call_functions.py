@@ -4,7 +4,7 @@ from collections.abc import Callable
 import json
 from typing import Any
 from ai_agent.config import WORKING_DIR
-
+from ai_agent.approval import needs_approval, confirm
 
 from openai.types.chat import (
     ChatCompletionMessageFunctionToolCall,
@@ -28,7 +28,8 @@ available_functions: list[ChatCompletionToolParam] = [
 
 
 def call_function(
-    tool_call: ChatCompletionMessageFunctionToolCall, verbose: bool = False, auto_approve: bool = False
+    tool_call: ChatCompletionMessageFunctionToolCall, verbose: bool = False,
+    auto_approve: bool = False
 ) -> ChatCompletionToolMessageParam:
     """Execute the tool call the model requested and wrap the result for the model.
 
@@ -67,6 +68,13 @@ def call_function(
             "content": f"Error: Unknown function: {function_name}",
         }
     
+    if needs_approval(function_name, auto_approve) and not confirm(function_name, function_args):
+        return {
+            "role": "tool",
+            "tool_call_id": tool_call.id,
+            "content": f"Error: Action cancelled by user: {function_name}"
+        }
+
     function_args["working_directory"] = WORKING_DIR
 
     result: str = function_map[function_name](**function_args)

@@ -18,7 +18,7 @@ course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
 | **1** Safety net | 1.1 print-scripts → pytest | ✅ done |
 | | 1.2 extract `WORKING_DIR` to config | ✅ done |
 | | 1.3 centralise path resolution + close symlink escape | ✅ done |
-| **2** Control | 2.1 approval gate | 🔨 in progress — 2.1.1 done |
+| **2** Control | 2.1 approval gate | ✅ done — all blocks; commit pending |
 | **3** Polish | 3.1 Rich terminal interface | not started |
 | | 3.2 README as changelog | not started |
 | **Optional 4** Security showcase | 4.1 prompt-injection demo + mitigation | deferred until after Phase 3 |
@@ -34,16 +34,57 @@ task's stub.
 
 ## ▶ Resume here
 
-**Next: Block 2.1.2** — add `--auto-approve` to argparse in `main.py` and thread
-it into `call_function`'s signature. Then 2.1.3 (insert the gate before
-dispatch), 2.1.4 (pytest for `needs_approval`), 2.1.5 (manual verification).
+**Next: Task 3.1 — Rich terminal interface.** Phase 2 is functionally complete;
+the only outstanding item is its checkpoint commit
+(`git commit -m "Phase 2: add approval gate"`).
 
-`approval.py` itself is finished (2.1.1). Paired mode — Matt writes, Obie-Wan
-reviews.
+Paired mode — Matt writes, Obie-Wan reviews.
 
 ---
 
 ## Change log (newest first)
+
+### 2026-07-25 — Blocks 2.1.2–2.1.5: gate wired in; **Task 2.1 complete**
+
+Paired (Matt writing, Obie-Wan reviewing). The gate is now live end to end.
+
+- **2.1.2 — plumbing.** `--auto-approve` added to argparse in `main.py`
+  ("Enable YOLO mode. Use at your own risk"); `auto_approve: bool = False` added
+  to `call_function`'s signature and threaded through at the call site. The
+  `False` default means a caller who forgets to pass it fails *closed*.
+- **2.1.3 — the gate.** In `call_functions.py`, between the unknown-function
+  guard and the `working_directory` injection:
+  `if needs_approval(function_name, auto_approve) and not confirm(function_name,
+  function_args): return {...}`. Denial returns a normal tool message —
+  `f"Error: Action cancelled by user: {function_name}"` — matching the
+  `Error:` register of the unknown-function return above it.
+  Two placement decisions worth keeping: the pure predicate is the **left**
+  operand so short-circuiting means `confirm`'s stdin prompt never fires for
+  read-only tools; and the gate sits **before** `working_directory` is injected
+  so the human sees exactly what the model asked for, not internal plumbing.
+- **2.1.4 — tests.** `tests/test_approval.py`, three tests against
+  `needs_approval` (dangerous+not-auto → True, read-only → False, auto → False),
+  asserting with `is True` / `is False` rather than truthiness. `confirm` left
+  untested by design, noted in-file.
+- **2.1.5 — live verification.** `uv run main.py "write 'hello' to testfile.txt"
+  --verbose` prompted before writing; a denial produced
+  `-> Error: Action cancelled by user: write_file`, and the model adapted in the
+  next turn ("I cannot write to `testfile.txt`. Is there another file I can
+  write to?") rather than the loop falling over. That behaviour — denial as a
+  normal tool result, not an exception — was the point of the design.
+
+**Also this session:** module docstring added to `approval.py` (closes a hole
+carried from the 2.1.1 entry below); the `--auto-apporve` typo caught in review
+before it could produce a runtime `AttributeError`; ruff `line-length` widened
+from 88 to 115 in `pyproject.toml` (Matt's call, noted rather than argued).
+
+**Known, accepted holes (still carried):** `confirm`'s `EOFError` on
+closed/piped stdin remains uncaught; `confirm` remains untested; `PLAN.md`'s
+skeleton still types `function_args` as bare `dict`.
+
+**Verification:** `uv run python -m pytest -v` → **14 passed, 2 skipped** in
+0.20s. `uv run ruff check .` → All checks passed. The two skips remain the
+deferred Optional Phase 4 injection tests.
 
 ### 2026-07-25 — Block 2.1.1: `approval.py` implemented
 

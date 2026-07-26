@@ -21,7 +21,7 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.ruff]
-line-length = 88
+line-length = 115
 
 [tool.basedpyright]
 typeCheckingMode = "recommended"

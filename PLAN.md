@@ -334,17 +334,17 @@ loop keep going). Don't gate the read-only tools.
 
 **Blocks:**
 - [x] **2.1.1** — Write `approval.py` (`DANGEROUS`, `needs_approval`, `confirm`) per the skeleton.
-- [ ] **2.1.2** — Add `--auto-approve` to argparse in `main.py` and thread it into `call_function`'s signature.
-- [ ] **2.1.3** — Insert the gate in `call_function` before dispatch; denial returns a tool message.
-- [ ] **2.1.4** — Add one pytest for `needs_approval` (dangerous+not-auto → True; read-only → False; auto → False). Leave `confirm` untested (it's stdin I/O — note that as a known, acceptable hole).
-- [ ] **2.1.5** — Verify: `uv run python -m ai_agent.main "write hello to test.txt"` prompts before writing; `--auto-approve` skips the prompt.
+- [x] **2.1.2** — Add `--auto-approve` to argparse in `main.py` and thread it into `call_function`'s signature.
+- [x] **2.1.3** — Insert the gate in `call_function` before dispatch; denial returns a tool message.
+- [x] **2.1.4** — Add one pytest for `needs_approval` (dangerous+not-auto → True; read-only → False; auto → False). Leave `confirm` untested (it's stdin I/O — note that as a known, acceptable hole).
+- [x] **2.1.5** — Verify: `uv run python -m ai_agent.main "write hello to test.txt"` prompts before writing; `--auto-approve` skips the prompt.
 
 ---
 
 ### Phase 2 Checkpoint
-- [ ] Writes and executions prompt for approval; `--auto-approve` bypasses.
-- [ ] Denial is handled gracefully (agent loop continues, model sees the denial).
-- [ ] `uv run python -m pytest -v` green.
+- [x] Writes and executions prompt for approval; `--auto-approve` bypasses.
+- [x] Denial is handled gracefully (agent loop continues, model sees the denial).
+- [x] `uv run python -m pytest -v` green.
 - [ ] **Commit:** `git commit -m "Phase 2: add approval gate"`
 
 ---

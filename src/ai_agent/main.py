@@ -34,7 +34,7 @@ def main() -> None:
     parser: ArgumentParser = ArgumentParser(description="Chatbot")
     parser.add_argument("user_prompt", type=str, help="User prompt")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
-    parser.add_argument("--auto-apporve", action="store_true", help="Enable YOLO mode. Use at your own risk")
+    parser.add_argument("--auto-approve", action="store_true", help="Enable YOLO mode. Use at your own risk")
     args: Namespace = parser.parse_args()
 
     if not isinstance(args.user_prompt, str):
@@ -81,7 +81,7 @@ def main() -> None:
         for tool_call in message.tool_calls:
             if tool_call.type == "function":
                 result_message: ChatCompletionToolMessageParam = call_function(
-                    tool_call, args.verbose
+                    tool_call, args.verbose, args.auto_approve
                 )
                 if not result_message["content"]:
                     raise ValueError("Content is empty")

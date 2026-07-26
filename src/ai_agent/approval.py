@@ -1,3 +1,11 @@
+"""Human-in-the-loop approval gate for dangerous tool calls.
+
+Splits the decision from the prompt: `needs_approval` is a pure predicate that
+says whether a call must be confirmed, and `confirm` does the stdin I/O. The
+gate is a UX/control layer, not a sandbox — it asks the human, it does not
+contain the process.
+"""
+
 DANGEROUS: frozenset[str] = frozenset({"write_file", "run_python_file"})
 
 
