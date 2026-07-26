@@ -18,7 +18,7 @@ course produced. Companion to `OUTLINE.md` (what/why) and `PLAN.md` (how).
 | **1** Safety net | 1.1 print-scripts → pytest | ✅ done |
 | | 1.2 extract `WORKING_DIR` to config | ✅ done |
 | | 1.3 centralise path resolution + close symlink escape | ✅ done |
-| **2** Control | 2.1 approval gate | ✅ done — all blocks; commit pending |
+| **2** Control | 2.1 approval gate | ✅ done — all blocks + checkpoint commit |
 | **3** Polish | 3.1 Rich terminal interface | not started |
 | | 3.2 README as changelog | not started |
 | **Optional 4** Security showcase | 4.1 prompt-injection demo + mitigation | deferred until after Phase 3 |
@@ -34,9 +34,8 @@ task's stub.
 
 ## ▶ Resume here
 
-**Next: Task 3.1 — Rich terminal interface.** Phase 2 is functionally complete;
-the only outstanding item is its checkpoint commit
-(`git commit -m "Phase 2: add approval gate"`).
+**Next: Task 3.1 — Rich terminal interface.** Phase 2 is complete and committed
+(checkpoint landed as `bef2592`).
 
 Paired mode — Matt writes, Obie-Wan reviews.
 

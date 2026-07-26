@@ -5,6 +5,8 @@ import json
 from typing import Any
 from ai_agent.config import WORKING_DIR
 from ai_agent.approval import needs_approval, confirm
+from rich.console import Console
+from rich.panel import Panel
 
 from openai.types.chat import (
     ChatCompletionMessageFunctionToolCall,
@@ -25,6 +27,8 @@ available_functions: list[ChatCompletionToolParam] = [
     schema_write_file,
     schema_run_python_file,
 ]
+
+console = Console()
 
 
 def call_function(
@@ -49,10 +53,17 @@ def call_function(
     """
     function_name: str = tool_call.function.name
     function_args: dict[str, Any] = json.loads(tool_call.function.arguments or "{}")
+
     if verbose:
-        print(f" - Calling function: {function_name}({function_args})")
+        console.print(
+            Panel(f" - Calling function: {function_name}({function_args})",
+                title = "[bold yellow]Tool Call Verbose[/]")
+        )
     else:
-        print(f" - Calling function: {function_name}")
+        console.print(
+            Panel(f" - Calling function: {function_name}",
+                  title = "[bold cyan]Tool Call[/]")
+        )
 
     function_map: dict[str, Callable[..., str]] = {
         "get_files_info": get_files_info,
@@ -62,13 +73,23 @@ def call_function(
     }
 
     if function_name not in function_map:
+        console.print(
+            Panel(f"Error: Unknown function: {function_name}",
+                  title = "[bold red]Tool Error[/]",
+                  border_style = "red")
+        )
         return {
             "role": "tool",
             "tool_call_id": tool_call.id,
             "content": f"Error: Unknown function: {function_name}",
         }
-    
+
     if needs_approval(function_name, auto_approve) and not confirm(function_name, function_args):
+        console.print(
+            Panel(f" - {function_name} cancelled by user",
+                  title = "[bold red]Tool Call Denied[/]",
+                  border_style = "red")
+        )
         return {
             "role": "tool",
             "tool_call_id": tool_call.id,
@@ -78,10 +99,21 @@ def call_function(
     function_args["working_directory"] = WORKING_DIR
 
     result: str = function_map[function_name](**function_args)
+    if result.startswith("Error:"):
+        console.print(
+            Panel(result,
+                  title = "[bold red]Tool Error[/]",
+                  border_style = "red")
+        )
+    else:
+        console.print(
+            Panel(result,
+                  title = "[bold green]Tool Result[/]",
+                  border_style = "green")
+        )
+
     return {
         "role": "tool",
         "tool_call_id": tool_call.id,
         "content": result,
     }
-
-

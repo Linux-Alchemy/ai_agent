@@ -11,7 +11,13 @@ from openai.types.chat import (
 )
 from argparse import ArgumentParser, Namespace
 from ai_agent.prompts import system_prompt
-from ai_agent.call_functions import available_functions, call_function
+from ai_agent.call_functions import available_functions, call_function, console
+from rich.panel import Panel
+
+# TODO 3.1.2 (imports):
+# - Add `console` to the import from `ai_agent.call_functions` above. This reuses
+#   the one Console instance already created there; do not create another here.
+# - Import `Panel` from `rich.panel` for the final response.
 
 
 def main() -> None:
@@ -53,12 +59,18 @@ def main() -> None:
         api_key=api_key,
     )
     for _ in range(20):
-        response: ChatCompletion = client.chat.completions.create(
-            model="google/gemini-2.5-flash",
-            messages=messages,
-            tools=available_functions,
-            temperature=0,
-        )
+        with console.status(
+            "[bold white]Thinking...[/]",
+            spinner = "dots",
+            spinner_style = "white",
+            speed = 1.0,
+        ):
+            response: ChatCompletion = client.chat.completions.create(
+                model="google/gemini-2.5-flash",
+                messages=messages,
+                tools=available_functions,
+                temperature=0,
+            )
 
         if response.usage is None:
             raise RuntimeError("No usage metadata returned")
@@ -67,15 +79,26 @@ def main() -> None:
         response_tokens: int = response.usage.completion_tokens
         
         if args.verbose:
-            print(f"Prompt tokens:{prompt_tokens}")
-            print(f"Response tokens: {response_tokens}")
+            console.print(
+                f"Prompt tokens: {prompt_tokens}",
+                style = "dim"
+            )
+            console.print(
+                f"Response tokens: {response_tokens}",
+                style = "dim"
+            )
 
 
         message = response.choices[0].message
         messages.append(message)
         if not message.tool_calls:
-            print("Final Response")
-            print(message.content)
+            console.print(
+                Panel(
+                    message.content or "",
+                    title = "[bold blue]Final Response",
+                    border_style = "blue",
+                )
+            )
             return
 
         for tool_call in message.tool_calls:
@@ -85,9 +108,6 @@ def main() -> None:
                 )
                 if not result_message["content"]:
                     raise ValueError("Content is empty")
-                if args.verbose:
-                    print(f" -> {result_message['content']}")
-
                 messages.append(result_message)
 
     else:

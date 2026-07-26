@@ -345,7 +345,7 @@ loop keep going). Don't gate the read-only tools.
 - [x] Writes and executions prompt for approval; `--auto-approve` bypasses.
 - [x] Denial is handled gracefully (agent loop continues, model sees the denial).
 - [x] `uv run python -m pytest -v` green.
-- [ ] **Commit:** `git commit -m "Phase 2: add approval gate"`
+- [x] **Commit:** `git commit -m "Phase 2: add approval gate"` (landed as `bef2592`)
 
 ---
 
